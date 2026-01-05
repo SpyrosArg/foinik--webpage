@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FOINIK - AI Security Testing Platform</title>
-    <meta name="description" content="Enterprise-grade AI penetration testing platform. Automated vulnerability assessment for LLMs using the MYNDRA methodology.">
-    <meta property="og:title" content="FOINIK - AI Security Testing Platform">
-    <meta property="og:description" content="Automated AI penetration testing and vulnerability assessment for enterprise LLM deployments">
+    <title>FOINIK - AI Security Testing for Space Systems</title>
+    <meta name="description" content="Research project exploring evolutionary genetic algorithms for AI security testing in space systems. Attacks that evolve like biological organisms to discover zero-day vulnerabilities.">
+    <meta property="og:title" content="FOINIK - AI Security Research Project">
+    <meta property="og:description" content="Exploring how genetic algorithms can revolutionize AI red teaming for autonomous satellites and space infrastructure.">
     <meta property="og:image" content="https://yourusername.github.io/Phoenix.png">
-    <meta name="keywords" content="AI security, LLM testing, penetration testing, MYNDRA, AI red teaming, prompt injection">
+    <meta name="keywords" content="space security, satellite AI, genetic algorithms, AI red teaming, space cybersecurity, autonomous satellites, ground station security">
     <link rel="icon" type="image/png" href="Phoenix.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -107,10 +107,14 @@
         .hero-description {
             font-size: 18px;
             color: #888;
-            max-width: 700px;
+            max-width: 800px;
             margin: 0 auto 40px;
             line-height: 1.8;
             animation: fadeIn 1s ease-out 0.7s both;
+        }
+        
+        .hero-description strong {
+            color: #00ff80;
         }
         
         .cta-buttons {
@@ -263,17 +267,17 @@
             line-height: 1.6;
         }
         
-        /* Methodology Section */
-        .methodology-section {
+        /* Evolution Section */
+        .evolution-section {
             padding: 80px 20px;
             background: rgba(0, 10, 5, 0.5);
         }
         
-        .methodology-steps {
+        .evolution-steps {
             display: flex;
             justify-content: space-around;
             flex-wrap: wrap;
-            gap: 30px;
+            gap: 40px;
             max-width: 1000px;
             margin: 0 auto;
         }
@@ -281,25 +285,26 @@
         .step {
             text-align: center;
             flex: 1;
-            min-width: 200px;
+            min-width: 180px;
         }
         
         .step-number {
-            width: 60px;
-            height: 60px;
-            border: 2px solid #00ff80;
+            width: 80px;
+            height: 80px;
+            border: 3px solid #00ff80;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 20px;
-            font-size: 24px;
+            font-size: 14px;
             font-weight: 700;
             color: #00ff80;
+            background: rgba(0, 255, 128, 0.05);
         }
         
         .step-title {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 600;
             margin-bottom: 10px;
             color: #fff;
@@ -307,19 +312,21 @@
         
         .step-desc {
             color: #888;
-            font-size: 14px;
+            font-size: 13px;
+            line-height: 1.5;
         }
         
         /* Stats Section */
         .stats-section {
             padding: 80px 20px;
+            background: rgba(0, 10, 5, 0.5);
         }
         
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 40px;
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             text-align: center;
         }
@@ -363,6 +370,9 @@
             font-size: 18px;
             color: #888;
             margin-bottom: 40px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
         }
         
         /* Footer */
@@ -430,6 +440,7 @@
             }
             .logo { max-width: 180px; }
             .stat-number { font-size: 36px; }
+            .step-number { width: 70px; height: 70px; }
         }
     </style>
 </head>
@@ -440,18 +451,18 @@
     <section class="hero">
         <img src="Phoenix.png" alt="FOINIK Phoenix Logo" class="logo">
         <h1 class="brand-name">FOINIK</h1>
-        <p class="tagline">AI Security Testing Platform</p>
+        <p class="tagline">AI Security Testing for Space Systems</p>
         <p class="hero-description">
-            Enterprise-grade penetration testing for Large Language Models. 
-            Powered by the <strong>MYNDRA</strong> methodology to identify and exploit 
-            AI vulnerabilities before attackers do.
+            The only sustainable way to secure <strong>continuously evolving AI</strong> is with 
+            <strong>continuously evolving testing</strong>. Foinik uses genetic algorithms to evolve 
+            adversarial attacks against AI systems in satellites, ground stations, and space infrastructure.
         </p>
         <div class="cta-buttons">
             <a href="https://www.linkedin.com/company/foinik/" target="_blank" class="btn btn-primary">
-                Get Early Access
+                Follow Development
             </a>
             <a href="#features" class="btn btn-secondary">
-                Learn More
+                How It Works
             </a>
         </div>
     </section>
@@ -459,7 +470,7 @@
     <!-- Terminal Preview Section -->
     <section class="terminal-section">
         <div class="container">
-            <h2 class="section-title">Live Attack Simulation</h2>
+            <h2 class="section-title">Evolution in Action</h2>
             <div class="terminal">
                 <div class="terminal-header">
                     <div class="terminal-dot dot-red"></div>
@@ -467,24 +478,24 @@
                     <div class="terminal-dot dot-green"></div>
                 </div>
                 <div class="terminal-content">
-                    <span class="comment">$ foinik --target api.enterprise-llm.com --mode aggressive</span><br>
+                    <span class="comment">$ foinik test --target satellite-api.space.corp --mode evolutionary</span><br>
                     <br>
-                    <span>[*] Initializing FOINIK Attack Engine v0.1</span><br>
-                    <span>[*] Loading MYNDRA methodology...</span><br>
-                    <span class="success">[+] Target identified: GPT-4-Enterprise</span><br>
-                    <span>[*] Executing reconnaissance phase...</span><br>
-                    <span class="success">[+] Model fingerprinting complete</span><br>
-                    <span>[*] Testing 147 attack vectors...</span><br>
+                    <span>[*] Initializing Variant Evolution Engine v1.0</span><br>
+                    <span class="success">[+] Target: Autonomous Satellite Control API</span><br>
+                    <span>[*] Seeding initial population: 200 attack variants</span><br>
+                    <span class="success">[+] Generation 1: Best fitness 71% (baseline)</span><br>
                     <br>
-                    <span class="warning">[!] Prompt injection vulnerability detected</span><br>
-                    <span class="warning">[!] System prompt extraction possible</span><br>
-                    <span class="error">[!] CRITICAL: Jailbreak successful with DAN-11.0</span><br>
-                    <span class="warning">[!] Memory poisoning attack viable</span><br>
+                    <span>[*] Evolving attack population...</span><br>
+                    <span class="success">[+] Generation 5: Best fitness 83% (+12%)</span><br>
+                    <span class="success">[+] Generation 10: Best fitness 91% (+20%)</span><br>
                     <br>
-                    <span class="success">[+] Penetration test complete</span><br>
-                    <span>[*] Vulnerabilities found: 4 CRITICAL, 7 HIGH, 12 MEDIUM</span><br>
-                    <span>[*] Time elapsed: 3.7 seconds</span><br>
-                    <span class="success">[+] Report generated: ./reports/enterprise-llm-audit.pdf</span><br>
+                    <span class="warning">[!] DISCOVERY: Command injection via AI orbit planner</span><br>
+                    <span class="error">[!] CRITICAL: Unauthorized maneuver commands accepted</span><br>
+                    <span class="warning">[!] Safety constraints bypassed through prompt confusion</span><br>
+                    <br>
+                    <span class="success">[+] Evolution complete: 10 generations in 47 seconds</span><br>
+                    <span>[*] Successful attacks discovered: 3 CRITICAL, 5 HIGH, 8 MEDIUM</span><br>
+                    <span class="comment"># This attack pattern was never programmed. Evolution discovered it.</span><br>
                 </div>
             </div>
         </div>
@@ -493,86 +504,97 @@
     <!-- Features Section -->
     <section id="features" class="features-section">
         <div class="container">
-            <h2 class="section-title">Comprehensive AI Security Testing</h2>
+            <h2 class="section-title">Research Focus Areas</h2>
             <div class="features-grid">
                 <div class="feature-card">
-                    <div class="feature-icon"></div>
-                    <h3 class="feature-title">Model Fingerprinting</h3>
-                    <p class="feature-desc">Instantly identify AI model versions, configurations, and potential attack surfaces through advanced reconnaissance.</p>
+                    <div class="feature-icon">🛰️</div>
+                    <h3 class="feature-title">Autonomous Satellite Testing</h3>
+                    <p class="feature-desc">Test AI decision-making in orbit planners, collision avoidance, and mission control systems for vulnerabilities before deployment.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon"></div>
-                    <h3 class="feature-title">Prompt Injection Testing</h3>
-                    <p class="feature-desc">Automated testing of 100+ prompt injection techniques to bypass guardrails and security measures.</p>
+                    <div class="feature-icon">🌍</div>
+                    <h3 class="feature-title">Ground Station Security</h3>
+                    <p class="feature-desc">Assess AI-powered ground station operations, telemetry analysis, and command validation systems against adversarial attacks.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon"></div>
-                    <h3 class="feature-title">Memory & RAG Attacks</h3>
-                    <p class="feature-desc">Test resilience against context poisoning, false memory injection, and vector database manipulation.</p>
+                    <div class="feature-icon">🔗</div>
+                    <h3 class="feature-title">Inter-Satellite Links</h3>
+                    <p class="feature-desc">Test AI communication protocols and autonomous routing decisions in satellite constellations for security weaknesses.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon"></div>
-                    <h3 class="feature-title">Jailbreak Automation</h3>
-                    <p class="feature-desc">Deploy evolving jailbreak techniques that adapt to model defenses in real-time.</p>
+                    <div class="feature-icon">🧬</div>
+                    <h3 class="feature-title">Genetic Algorithm Engine</h3>
+                    <p class="feature-desc">Attacks evolve like biological organisms—crossbreeding successful techniques and mutating to discover zero-day vulnerabilities.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon"></div>
-                    <h3 class="feature-title">MITRE ATLAS Mapping</h3>
-                    <p class="feature-desc">Complete coverage of MITRE ATLAS framework with detailed compliance reporting.</p>
+                    <div class="feature-icon">🎯</div>
+                    <h3 class="feature-title">Space Protocol Support</h3>
+                    <p class="feature-desc">Native support for CCSDS, TT&C, and satellite-specific APIs. Tests AI systems in their actual operational context.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon"></div>
-                    <h3 class="feature-title">Attack RNA™ Technology</h3>
-                    <p class="feature-desc">Self-learning attack patterns that evolve and share successful exploits across assessments.</p>
+                    <div class="feature-icon">📊</div>
+                    <h3 class="feature-title">Evolution Visualization</h3>
+                    <p class="feature-desc">Watch attack fitness improve across generations. See exactly how each vulnerability was discovered through evolution.</p>
                 </div>
             </div>
         </div>
     </section>
     
-    <!-- MYNDRA Methodology Section -->
-    <section class="methodology-section">
+    <!-- Evolution Cycle Section -->
+    <section class="evolution-section">
         <div class="container">
-            <h2 class="section-title">The MYNDRA Methodology</h2>
-            <div class="methodology-steps">
+            <h2 class="section-title">The Evolution Cycle</h2>
+            <div class="evolution-steps">
                 <div class="step">
-                    <div class="step-number">M</div>
-                    <h3 class="step-title">Mapping</h3>
-                    <p class="step-desc">Comprehensive discovery of AI attack surface and entry points</p>
+                    <div class="step-number">SEED</div>
+                    <h3 class="step-title">Plant 200 Seeds</h3>
+                    <p class="step-desc">Initialize with known attack patterns from OWASP, research, and previous tests</p>
                 </div>
                 <div class="step">
-                    <div class="step-number">D</div>
-                    <h3 class="step-title">Discovery</h3>
-                    <p class="step-desc">Deep reconnaissance of model capabilities and weaknesses</p>
+                    <div class="step-number">SELECT</div>
+                    <h3 class="step-title">Natural Selection</h3>
+                    <p class="step-desc">Elite 10% survive unchanged. Top 40% breed. Bottom 50% eliminated</p>
                 </div>
                 <div class="step">
-                    <div class="step-number">T</div>
-                    <h3 class="step-title">Testing</h3>
-                    <p class="step-desc">Systematic exploitation using adaptive attack chains</p>
+                    <div class="step-number">BREED</div>
+                    <h3 class="step-title">Crossbreeding</h3>
+                    <p class="step-desc">Successful attacks exchange techniques to create more sophisticated variants</p>
                 </div>
                 <div class="step">
-                    <div class="step-number">R</div>
-                    <h3 class="step-title">Reporting</h3>
-                    <p class="step-desc">Executive and technical reports with remediation guidance</p>
+                    <div class="step-number">MUTATE</div>
+                    <h3 class="step-title">Random Mutations</h3>
+                    <p class="step-desc">30% get DNA changes—synonyms, unicode, authority tokens, context shifts</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">EVOLVE</div>
+                    <h3 class="step-title">Repeat 10x</h3>
+                    <p class="step-desc">Each generation gets 20-30% better. Novel attacks emerge that were never programmed</p>
                 </div>
             </div>
         </div>
     </section>
     
+
     <!-- Stats Section -->
     <section class="stats-section">
         <div class="container">
+            <h2 class="section-title">Current Research Status</h2>
             <div class="stats-grid">
                 <div class="stat">
-                    <div class="stat-number">147+</div>
-                    <div class="stat-label">Attack Vectors</div>
+                    <div class="stat-number">200</div>
+                    <div class="stat-label">Attack Variants per Test</div>
                 </div>
                 <div class="stat">
-                    <div class="stat-number">3.7s</div>
-                    <div class="stat-label">Average Scan Time</div>
+                    <div class="stat-number">10</div>
+                    <div class="stat-label">Evolution Generations</div>
                 </div>
                 <div class="stat">
-                    <div class="stat-number">15+</div>
-                    <div class="stat-label">LLM Models Supported</div>
+                    <div class="stat-number">28%</div>
+                    <div class="stat-label">Average Fitness Improvement</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">~1min</div>
+                    <div class="stat-label">Full Evolution Cycle</div>
                 </div>
             </div>
         </div>
@@ -581,10 +603,18 @@
     <!-- CTA Section -->
     <section class="cta-section">
         <div class="container">
-            <p class="cta-subtitle">Join the early access program and be among the first to test your AI systems</p>
+            <h2 class="cta-title">Revolutionizing AI Red Teaming</h2>
+            <p class="cta-subtitle">
+                Foinik is a research project exploring how evolutionary algorithms can discover 
+                vulnerabilities that traditional testing methods miss. Follow the development as we 
+                push the boundaries of AI security testing for space systems.
+            </p>
             <div class="cta-buttons">
                 <a href="https://www.linkedin.com/company/foinik/" target="_blank" class="btn btn-primary">
-                    Request Early Access
+                    Follow on LinkedIn
+                </a>
+                <a href="https://github.com/yourusername/variant" target="_blank" class="btn btn-secondary">
+                    View on GitHub
                 </a>
             </div>
         </div>
@@ -594,20 +624,18 @@
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
-                <p>&copy; 2025 FOINIK. AI Security Testing Platform.</p>
-                <p>Built with the MYNDRA methodology</p>
+                <p>&copy; 2025 FOINIK. AI Security Research Project.</p>
+                <p>Exploring evolutionary genetic algorithms for AI red teaming</p>
+                <p style="margin-top: 10px; font-size: 12px; color: #555;">
+                    Research & Development 
+                </p>
             </div>
             <div class="footer-links">
                 <a href="https://www.linkedin.com/company/foinik/" target="_blank">LinkedIn</a>
+                <a href="https://github.com/SpyrosArg/Variant-Genetic-Algorithm" target="_blank">GitHub</a>
                 <a href="#features">Features</a>
-                <a href="#methodology">Methodology</a>
             </div>
         </div>
     </footer>
 </body>
 </html>
-
-
-
-
-
