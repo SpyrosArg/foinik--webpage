@@ -46,12 +46,6 @@ or serve it with any static server:
 python3 -m http.server 8000
 ```
 
-## Deploying
-
-1. Push `index.html` to the root of a GitHub repo (or a `/docs` folder).
-2. **Settings → Pages → Source → Deploy from branch → `main` / root.**
-3. Live at `https://<username>.github.io/<repo>/` within a couple of minutes.
-
 ## Disclaimer
 
 FOINIK is an educational aid to help you reason about your AI system's attack surface , it is not a substitute for a professional security review or penetration test.
