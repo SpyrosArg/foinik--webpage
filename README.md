@@ -5,7 +5,7 @@ A free, client-side tool that maps your AI system's architecture and tells you w
 
 ## Why
 
-Most AI security checklists are generic. FOINIK isn't a checklist , it's a small rules engine. You tell it what your system actually looks like (deployment model, interface, data sensitivity, and the specific components you use — RAG, agents, tool calling, MCP servers, code execution, etc.), and it works out which of 21 real threat vectors apply to *that* architecture, not a hypothetical one.
+Most AI security checklists are generic. FOINIK isn't a checklist , it's a small rules engine. You tell it what your system actually looks like (deployment model, interface, data sensitivity, and the specific components you use , RAG, agents, tool calling, MCP servers, code execution, etc.), and it works out which of 21 real threat vectors apply to *that* architecture, not a hypothetical one.
 
 ## How it works
 
@@ -14,7 +14,7 @@ Most AI security checklists are generic. FOINIK isn't a checklist , it's a small
 3. **Run the scan** ~ a deterministic rules engine matches your staged components against 21 threat vectors and returns a risk score, severity breakdown, and per-vector mitigations.
 4. **Export the result** ~ copy or download the full assessment as a Markdown report.
 
-There's no AI, no backend, and no black box: the whole matching logic is one small readable function in `index.html` — every rule, every component, and every reference is plainly visible in the source.
+There's no AI, no backend, and no black box: the whole matching logic is one small readable function in `index.html` , every rule, every component, and every reference is plainly visible in the source.
 
 ## Frameworks referenced
 
@@ -29,7 +29,7 @@ Every identified vector is cross-mapped to:
 
 ## Privacy
 
-Everything runs in your browser. Nothing you stage, scan, or export is sent anywhere. The only network request the page makes is loading two web fonts from Google Fonts — no analytics, no telemetry, no accounts.
+Everything runs in your browser. Nothing you stage, scan, or export is sent anywhere. The only network request the page makes is loading two web fonts from Google Fonts , no analytics, no telemetry, no accounts.
 
 ## Running it locally
 
@@ -54,7 +54,7 @@ python3 -m http.server 8000
 
 ## Disclaimer
 
-FOINIK is an educational aid to help you reason about your AI system's attack surface — it is not a substitute for a professional security review or penetration test.
+FOINIK is an educational aid to help you reason about your AI system's attack surface , it is not a substitute for a professional security review or penetration test.
 
 ## License
 
