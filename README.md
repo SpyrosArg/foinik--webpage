@@ -2,7 +2,6 @@
 
 A free, client-side tool that maps your AI system's architecture and tells you which real attack vectors apply to it , with mitigations and cross-framework references. No installs, no accounts, no telemetry.
 
-**[Live demo →](#)** *(replace with your GitHub Pages URL once deployed)*
 
 ## Why
 
