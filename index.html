@@ -1,1019 +1,640 @@
 <!DOCTYPE html>
-<html lang="en"><head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FOINIK · AI Security Posture Mapper</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%230c0a10%22/%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2216%22%20r%3D%2212.5%22%20stroke%3D%22rgba%28255%2C255%2C255%2C.15%29%22%20stroke-width%3D%222%22%20fill%3D%22none%22/%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2216%22%20r%3D%2212.5%22%20stroke%3D%22%23ff7a45%22%20stroke-width%3D%222.6%22%20stroke-dasharray%3D%2244%2078%22%20transform%3D%22rotate%28-90%2016%2016%29%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22/%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2216%22%20r%3D%226.5%22%20stroke%3D%22%23ff5d5d%22%20stroke-width%3D%221.8%22%20stroke-dasharray%3D%2220%2021%22%20transform%3D%22rotate%2890%2016%2016%29%22%20opacity%3D%22.85%22%20fill%3D%22none%22/%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2216%22%20r%3D%223%22%20fill%3D%22%23ff7a45%22/%3E%3C/svg%3E">
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg:#0c0a10; --panel:#131018; --panel-2:#0f0d13; --line:rgba(255,255,255,.06); --line-b:rgba(255,255,255,.13);
-    --ink:#f3efe9; --dim:#aaa2b2; --faint:#6f6879;
-    --flame:#ff7a45; --red:#ff5d5d; --amber:#ffb648; --violet:#a78bfa; --teal:#34d9c3; --green:#4fd18b;
-    --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
-    --sans:'Space Grotesk',-apple-system,'Segoe UI',sans-serif;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;height:100%;}
-  body{
-    background:radial-gradient(1000px 520px at 85% -8%,rgba(255,122,69,.07),transparent 60%),
-      radial-gradient(800px 460px at -5% 108%,rgba(167,139,250,.06),transparent 55%),var(--bg);
-    color:var(--ink);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased;font-size:14px;
-  }
-  a{color:var(--flame);} a:hover{color:#ffa47d;}
-  ::-webkit-scrollbar{width:9px;height:9px;} ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.09);border-radius:5px;border:2px solid var(--bg);}
-  ::-webkit-scrollbar-track{background:transparent;}
-
-  /* Top bar */
-  header.top{display:flex;align-items:center;justify-content:space-between;padding:12px 22px;
-    border-bottom:1px solid var(--line);position:sticky;top:0;z-index:80;
-    background:linear-gradient(180deg,rgba(19,16,24,.96),rgba(12,10,16,.75));backdrop-filter:blur(10px);}
-  .brand{display:flex;align-items:center;gap:12px;}
-  .bmark{width:32px;height:32px;flex:none;}
-  .btt{font-family:var(--mono);font-weight:800;letter-spacing:.28em;font-size:16px;
-    background:linear-gradient(100deg,#ffd0a8,var(--flame) 55%,#ff5d5d);-webkit-background-clip:text;background-clip:text;color:transparent;}
-  .bsub{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-top:2px;}
-  .top-mid{display:flex;gap:28px;}
-  .tm{display:flex;flex-direction:column;gap:2px;}
-  .tm .k{font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;color:var(--faint);text-transform:uppercase;}
-  .tm .v{font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.06em;}
-  .top-r{display:flex;align-items:center;gap:16px;}
-  .status{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
-    border:1px solid var(--line-b);border-radius:999px;padding:5px 12px;}
-  .beacon{width:7px;height:7px;border-radius:50%;background:var(--faint);}
-  .status.live{border-color:rgba(79,209,139,.4);color:var(--green);}
-  .status.live .beacon{background:var(--green);box-shadow:0 0 8px var(--green);animation:beat 1.6s infinite;}
-  .status.scan{border-color:rgba(255,122,69,.45);color:var(--flame);}
-  .status.scan .beacon{background:var(--flame);box-shadow:0 0 8px var(--flame);animation:beat .9s infinite;}
-  @keyframes beat{0%,100%{opacity:1;}50%{opacity:.3;}}
-  .clock{font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.05em;}
-
-  /* Shell */
-  .shell{display:grid;grid-template-columns:360px 1fr 412px;height:calc(100vh - 57px);}
-  @media (max-width:1200px){ .shell{grid-template-columns:320px 1fr 360px;} }
-  @media (max-width:980px){ .shell{grid-template-columns:1fr;height:auto;overflow:visible;} }
-  aside,section.intel{overflow-y:auto;}
-  aside{border-right:1px solid var(--line);padding:18px 16px 26px;background:var(--panel-2);}
-  section.intel{border-left:1px solid var(--line);padding:18px 16px 28px;background:var(--panel-2);}
-  main{position:relative;overflow:hidden;
-    background-image:radial-gradient(rgba(255,255,255,.045) 1px,transparent 1px);background-size:26px 26px;}
-  @media (max-width:980px){ main{min-height:540px;} }
-
-  /* Section headers */
-  .sh{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);
-    display:flex;align-items:center;gap:8px;margin:0 0 4px;}
-  .sh .idx{color:var(--flame);}
-  .sh-note{font-size:11.5px;color:var(--faint);margin:0 0 14px;line-height:1.45;}
-  .divider{height:1px;background:var(--line);margin:20px 0 16px;}
-
-  /* Dimension chips */
-  .dim-group{margin-bottom:13px;}
-  .dim-label{font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--faint);margin-bottom:6px;}
-  .chips{display:flex;flex-wrap:wrap;gap:6px;}
-  .chip{font-family:var(--mono);font-size:11px;padding:6px 12px;border:1px solid var(--line-b);
-    border-radius:999px;cursor:pointer;color:var(--dim);background:var(--panel);transition:.15s;user-select:none;}
-  .chip:hover{border-color:var(--faint);color:var(--ink);transform:translateY(-1px);}
-  .chip.on{background:rgba(255,122,69,.12);border-color:rgba(255,122,69,.55);color:var(--flame);box-shadow:0 0 12px -4px rgba(255,122,69,.5);}
-  .chip.risky.on{background:rgba(255,93,93,.12);border-color:rgba(255,93,93,.5);color:var(--red);box-shadow:0 0 12px -4px rgba(255,93,93,.5);}
-
-  /* Component staging */
-  .seg-h{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
-    display:flex;align-items:center;gap:7px;margin:18px 0 8px;}
-  .seg-h .dia{width:8px;height:8px;transform:rotate(45deg);flex:none;border-radius:2px;}
-  .seg-entry .dia{background:var(--teal);} .seg-model .dia{background:var(--violet);}
-  .seg-data .dia{background:#5b9dff;} .seg-action .dia{background:var(--amber);}
-  .seg-output .dia{background:var(--green);} .seg-infra .dia{background:var(--faint);}
-  .seg-h .nm{color:var(--dim);}
-  .comp{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--line);
-    border-radius:12px;margin-bottom:7px;cursor:pointer;user-select:none;background:var(--panel);
-    transition:border-color .15s,background .15s,transform .15s,box-shadow .15s;}
-  .comp:hover{border-color:var(--line-b);transform:translateY(-1px);box-shadow:0 4px 14px -8px rgba(0,0,0,.7);}
-  .comp.on{border-color:rgba(255,122,69,.5);background:rgba(255,122,69,.055);}
-  .comp .ico{width:28px;height:28px;border-radius:8px;flex:none;display:grid;place-items:center;
-    background:var(--panel-2);border:1px solid var(--line);color:var(--faint);transition:.15s;margin-top:1px;}
-  .comp.on .ico{color:var(--flame);border-color:rgba(255,122,69,.5);background:rgba(255,122,69,.1);}
-  .comp .b{flex:1;min-width:0;}
-  .comp .nm{font-size:12.5px;font-weight:600;line-height:1.25;display:flex;align-items:center;gap:6px;}
-  .comp .code{font-family:var(--mono);font-size:9px;color:var(--faint);letter-spacing:.06em;white-space:nowrap;}
-  .comp .ds{font-size:10.5px;color:var(--faint);line-height:1.35;margin-top:2px;}
-  .comp .sev{font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;
-    display:flex;align-items:center;gap:5px;flex:none;margin-top:3px;color:var(--faint);}
-  .comp.on .sev.c{color:var(--red);} .comp.on .sev.h{color:var(--amber);} .comp.on .sev.m{color:var(--violet);} .comp.on .sev.l{color:var(--teal);}
-  .comp .dot{width:6px;height:6px;border-radius:50%;background:var(--line-b);}
-  .comp.on .sev.c .dot{background:var(--red);box-shadow:0 0 6px var(--red);}
-  .comp.on .sev.h .dot{background:var(--amber);box-shadow:0 0 6px var(--amber);}
-  .comp.on .sev.m .dot{background:var(--violet);} .comp.on .sev.l .dot{background:var(--teal);}
-
-  .side-foot{margin-top:20px;position:sticky;bottom:0;background:linear-gradient(180deg,transparent,var(--panel-2) 26%);padding-top:14px;}
-  .cnt{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--faint);text-align:center;margin-bottom:9px;}
-  .cnt b{color:var(--flame);}
-  .cta{width:100%;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;
-    border:none;border-radius:12px;padding:15px;cursor:pointer;color:#fff;transition:.18s;
-    background:linear-gradient(100deg,var(--flame),#ff5d5d);
-    display:flex;align-items:center;justify-content:center;gap:9px;}
-  .cta:hover:not(:disabled){box-shadow:0 6px 28px -6px rgba(255,105,80,.75);transform:translateY(-1px);}
-  .cta:disabled{opacity:.3;cursor:not-allowed;}
-  .cta.scanning{background:linear-gradient(90deg,rgba(52,217,195,.85) var(--p,0%),rgba(52,217,195,.16) var(--p,0%));color:#04211c;}
-  .cta.done{background:rgba(52,217,195,.08);border:1px solid rgba(52,217,195,.45);color:var(--teal);}
-  .reset{width:100%;background:none;border:none;color:var(--faint);font-family:var(--mono);font-size:9.5px;
-    letter-spacing:.12em;text-transform:uppercase;cursor:pointer;padding:10px;}
-  .reset:hover{color:var(--dim);}
-
-  /* Canvas */
-  .canvas-head{position:absolute;top:14px;right:20px;text-align:right;font-family:var(--mono);
-    font-size:9.5px;letter-spacing:.1em;color:var(--faint);line-height:1.7;z-index:5;text-transform:uppercase;background:rgba(12,10,16,.85);border:1px solid var(--line);border-radius:10px;padding:8px 12px;backdrop-filter:blur(4px);}
-  .canvas-head .lbl{color:var(--dim);}
-  #svg{position:absolute;inset:0;width:100%;height:100%;}
-  .tier-cap{font-family:var(--mono);font-size:9px;letter-spacing:.2em;fill:var(--faint);text-transform:uppercase;}
-  .node{cursor:default;}
-  .node rect.body{transition:stroke .25s,fill .25s;}
-  .node.lit rect.body{filter:drop-shadow(0 6px 16px rgba(0,0,0,.45));}
-  .node .n-title{font-family:var(--sans);font-weight:600;font-size:11px;fill:var(--ink);}
-  .node .n-desc{font-family:var(--mono);font-size:8.5px;fill:var(--faint);letter-spacing:.08em;}
-  .node .n-stat{font-family:var(--mono);font-size:8px;letter-spacing:.1em;}
-  .node .n-dot{transition:fill .25s;}
-  .link{fill:none;transition:stroke .3s,opacity .3s,stroke-width .2s;}
-  .link.flow{stroke-dasharray:6 8;animation:dashf 1s linear infinite;}
-  @keyframes dashf{to{stroke-dashoffset:-14;}}
-  .ping{transform-box:fill-box;transform-origin:center;animation:pingr .85s ease-out forwards;pointer-events:none;}
-  @keyframes pingr{from{transform:scale(.3);opacity:.95;}to{transform:scale(3.2);opacity:0;}}
-
-  .tip{position:absolute;display:none;z-index:40;width:228px;background:rgba(19,16,24,.97);border:1px solid var(--line-b);
-    border-radius:12px;padding:12px 14px;pointer-events:none;box-shadow:0 14px 34px rgba(0,0,0,.55);backdrop-filter:blur(6px);}
-  .tip .tp-h{font-size:12.5px;font-weight:600;display:flex;gap:7px;align-items:center;line-height:1.25;}
-  .tp-code{font-family:var(--mono);font-size:8.5px;color:var(--flame);border:1px solid rgba(255,122,69,.4);border-radius:4px;padding:1px 5px;flex:none;white-space:nowrap;}
-  .tp-d{font-size:11px;color:var(--dim);margin-top:5px;line-height:1.45;}
-  .tp-s{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;margin-top:8px;}
-
-  .empty-hint{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    text-align:center;color:var(--faint);pointer-events:none;padding:20px;}
-  .eh-glyph{position:relative;width:74px;height:74px;margin-bottom:20px;}
-  .eh-glyph span{position:absolute;inset:0;border:1.5px solid rgba(255,122,69,.4);border-radius:50%;animation:pulse 2.6s ease-out infinite;}
-  .eh-glyph span:nth-child(2){animation-delay:.85s;}
-  .eh-glyph span:nth-child(3){animation-delay:1.7s;}
-  .eh-glyph i{position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;
-    background:var(--flame);box-shadow:0 0 14px rgba(255,122,69,.9);}
-  @keyframes pulse{from{transform:scale(.25);opacity:.9;}to{transform:scale(1.15);opacity:0;}}
-  .empty-hint .big{font-size:20px;font-weight:600;color:var(--ink);max-width:24ch;margin-bottom:8px;letter-spacing:-.01em;}
-  .empty-hint .sm{font-size:12.5px;max-width:44ch;line-height:1.55;color:var(--dim);}
-  .steps{display:flex;gap:10px;margin-top:24px;flex-wrap:wrap;justify-content:center;}
-  .step{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;
-    color:var(--dim);border:1px solid var(--line-b);border-radius:999px;padding:7px 14px 7px 8px;background:rgba(255,255,255,.02);}
-  .step span{width:19px;height:19px;border-radius:50%;background:rgba(255,122,69,.16);color:var(--flame);display:grid;place-items:center;font-weight:700;}
-
-  /* Intel panel */
-  .ring-row{display:flex;gap:18px;align-items:center;margin:8px 0 22px;}
-  .ring{position:relative;width:140px;height:140px;flex:none;}
-  .ring svg{transform:rotate(-90deg);}
-  .ring .rc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-  .ring .rn{font-family:var(--mono);font-weight:800;font-size:44px;line-height:1;}
-  .ring .rl{font-family:var(--mono);font-size:8px;letter-spacing:.2em;color:var(--faint);margin-top:4px;}
-  .posture .pl{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:6px;}
-  .posture .pv{display:inline-block;font-family:var(--mono);font-weight:700;font-size:16px;letter-spacing:.04em;
-    border:1px solid;border-radius:8px;padding:6px 14px;margin-bottom:10px;}
-  .posture .pd{font-size:12px;color:var(--dim);line-height:1.45;}
-
-  .sev-dist{margin-bottom:18px;}
-  .sd-head{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;
-    letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:9px;gap:8px;}
-  .sd-head span{white-space:nowrap;}
-  .sd-bar{display:flex;height:6px;border-radius:3px;overflow:hidden;background:rgba(255,255,255,.06);margin-bottom:10px;}
-  .sd-bar span{display:block;height:100%;transition:width .6s;}
-  .sd-cells{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-  .sd-cell{border:1px solid var(--line);border-radius:11px;padding:10px 11px;background:var(--panel);}
-  .sd-cell .sc-l{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;
-    display:flex;align-items:center;gap:5px;color:var(--faint);}
-  .sd-cell .sc-l .sq{width:7px;height:7px;border-radius:2px;}
-  .sd-cell .sc-n{font-family:var(--mono);font-size:26px;font-weight:800;line-height:1;margin-top:7px;}
-  .sd-cell.c .sc-n{color:var(--red);} .sd-cell.h .sc-n{color:var(--amber);} .sd-cell.m .sc-n{color:var(--violet);}
-  .sd-cell.c .sq{background:var(--red);} .sd-cell.h .sq{background:var(--amber);} .sd-cell.m .sq{background:var(--violet);}
-
-  .vec-h{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:20px 0 10px;}
-  .vec{border:1px solid var(--line);border-left-width:3px;border-radius:12px;margin-bottom:9px;background:var(--panel);overflow:hidden;
-    animation:rise .35s ease both;}
-  @keyframes rise{from{opacity:0;transform:translateY(9px);}to{opacity:1;transform:none;}}
-  .vec.c{border-left-color:var(--red);} .vec.h{border-left-color:var(--amber);} .vec.m{border-left-color:var(--violet);}
-  .vec-top{padding:12px 14px;cursor:pointer;display:flex;align-items:flex-start;gap:10px;}
-  .vec-top:hover{background:rgba(255,255,255,.02);}
-  .badge{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:999px;font-weight:700;flex:none;margin-top:1px;}
-  .vec.c .badge{background:rgba(255,93,93,.14);color:var(--red);} .vec.h .badge{background:rgba(255,182,72,.14);color:var(--amber);} .vec.m .badge{background:rgba(167,139,250,.14);color:var(--violet);}
-  .vec-tt{flex:1;}
-  .vec-id{font-family:var(--mono);font-size:9px;color:var(--faint);letter-spacing:.06em;margin-bottom:3px;}
-  .vec-name{font-size:13.5px;font-weight:600;line-height:1.25;}
-  .vec-tags{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap;}
-  .vtag{font-family:var(--mono);font-size:8.5px;color:var(--dim);border:1px solid var(--line-b);border-radius:5px;padding:2px 6px;white-space:nowrap;}
-  .vchev{color:var(--faint);font-size:12px;transition:transform .2s;margin-top:2px;}
-  .vec.open .vchev{transform:rotate(90deg);}
-  .vec-body{max-height:0;overflow:hidden;transition:max-height .3s ease;}
-  .vec.open .vec-body{max-height:600px;}
-  .vec-inner{padding:0 14px 14px;}
-  .vec-desc{font-size:12px;color:var(--dim);line-height:1.5;margin-bottom:12px;}
-  .vec-fix{font-size:12px;background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin-bottom:12px;}
-  .vec-fix b{color:var(--teal);font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:4px;font-weight:700;}
-  .ref-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:9px;overflow:hidden;}
-  @media (max-width:1200px){ .ref-grid{grid-template-columns:1fr 1fr;} }
-  .ref-cell{background:var(--panel);padding:8px 11px;}
-  .ref-cell .rk{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);}
-  .ref-cell .rv{font-family:var(--mono);font-size:11px;font-weight:700;margin-top:2px;letter-spacing:.02em;}
-
-  .intel-idle{color:var(--faint);text-align:center;padding:44px 10px;font-family:var(--mono);font-size:12px;letter-spacing:.04em;line-height:1.7;}
-  .scanlog{font-family:var(--mono);font-size:11px;line-height:1.85;color:var(--teal);}
-  .scanlog .ln{opacity:0;animation:fadein .2s forwards;}
-  .scanlog .dim{color:var(--faint);}
-  .scanlog .ok{color:var(--teal);}
-  .scanlog .warn{color:var(--amber);}
-  .scanlog .crit{color:var(--red);}
-  @keyframes fadein{to{opacity:1;}}
-
-  .export{margin-top:14px;width:100%;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
-    border:1px solid var(--line-b);background:transparent;color:var(--dim);border-radius:10px;padding:12px;cursor:pointer;transition:.15s;}
-  .export:hover{color:var(--ink);border-color:var(--faint);}
-
-  @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important;} }
-</style>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FOINIK - AI Security Testing for Space Systems</title>
+    <meta name="description" content="Research project exploring evolutionary genetic algorithms for AI security testing in space systems. Attacks that evolve like biological organisms to discover zero-day vulnerabilities.">
+    <meta property="og:title" content="FOINIK - AI Security Research Project">
+    <meta property="og:description" content="Exploring how genetic algorithms can revolutionize AI red teaming for autonomous satellites and space infrastructure.">
+    <meta property="og:image" content="https://yourusername.github.io/Phoenix.png">
+    <meta name="keywords" content="space security, satellite AI, genetic algorithms, AI red teaming, space cybersecurity, autonomous satellites, ground station security">
+    <link rel="icon" type="image/png" href="Phoenix.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000000;
+            color: #ffffff;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+        
+        /* Animated background grid */
+        .bg-grid {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 128, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 128, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: grid-move 20s linear infinite;
+            z-index: 0;
+        }
+        
+        @keyframes grid-move {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .logo {
+            max-width: 250px;
+            width: 100%;
+            height: auto;
+            filter: drop-shadow(0 0 30px rgba(0, 255, 128, 0.3));
+            animation: glow 3s ease-in-out infinite, fadeInDown 1s ease-out;
+            margin-bottom: 30px;
+        }
+        
+        @keyframes glow {
+            0%, 100% {
+                filter: drop-shadow(0 0 20px rgba(0, 255, 128, 0.3));
+            }
+            50% {
+                filter: drop-shadow(0 0 40px rgba(0, 255, 128, 0.5));
+            }
+        }
+        
+        .brand-name {
+            font-size: 72px;
+            font-weight: 900;
+            margin-bottom: 10px;
+            letter-spacing: 3px;
+            background: linear-gradient(135deg, #00ff80 0%, #00cc66 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: fadeIn 1s ease-out 0.3s both;
+        }
+        
+        .tagline {
+            font-size: 24px;
+            color: #b0b0b0;
+            font-weight: 300;
+            letter-spacing: 1px;
+            animation: fadeIn 1s ease-out 0.5s both;
+            margin-bottom: 30px;
+        }
+        
+        .hero-description {
+            font-size: 18px;
+            color: #888;
+            max-width: 800px;
+            margin: 0 auto 40px;
+            line-height: 1.8;
+            animation: fadeIn 1s ease-out 0.7s both;
+        }
+        
+        .hero-description strong {
+            color: #00ff80;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            animation: fadeIn 1s ease-out 0.9s both;
+        }
+        
+        .btn {
+            padding: 15px 35px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #00ff80 0%, #00cc66 100%);
+            color: #000;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(0, 255, 128, 0.4);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: #00ff80;
+            border: 2px solid #00ff80;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(0, 255, 128, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        /* Terminal Preview */
+        .terminal-section {
+            padding: 80px 20px;
+            background: rgba(0, 10, 5, 0.5);
+        }
+        
+        .section-title {
+            font-size: 36px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 50px;
+            color: #00ff80;
+        }
+        
+        .terminal {
+            background: #0a0a0a;
+            border: 1px solid #00ff80;
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 900px;
+            margin: 0 auto;
+            box-shadow: 0 20px 60px rgba(0, 255, 128, 0.1);
+        }
+        
+        .terminal-header {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .dot-red { background: #ff5555; }
+        .dot-yellow { background: #ffff55; }
+        .dot-green { background: #55ff55; }
+        
+        .terminal-content {
+            font-family: 'Courier New', monospace;
+            color: #00ff80;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .terminal-content .comment {
+            color: #666;
+        }
+        
+        .terminal-content .success {
+            color: #55ff55;
+        }
+        
+        .terminal-content .warning {
+            color: #ffff55;
+        }
+        
+        .terminal-content .error {
+            color: #ff5555;
+        }
+        
+        /* Features Section */
+        .features-section {
+            padding: 80px 20px;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        
+        .feature-card {
+            background: rgba(0, 20, 10, 0.5);
+            border: 1px solid rgba(0, 255, 128, 0.2);
+            border-radius: 10px;
+            padding: 30px;
+            transition: all 0.3s;
+        }
+        
+        .feature-card:hover {
+            border-color: #00ff80;
+            background: rgba(0, 30, 15, 0.6);
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            font-size: 32px;
+            margin-bottom: 15px;
+        }
+        
+        .feature-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #00ff80;
+        }
+        
+        .feature-desc {
+            color: #888;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        /* Evolution Section */
+        .evolution-section {
+            padding: 80px 20px;
+            background: rgba(0, 10, 5, 0.5);
+        }
+        
+        .evolution-steps {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .step {
+            text-align: center;
+            flex: 1;
+            min-width: 180px;
+        }
+        
+        .step-number {
+            width: 80px;
+            height: 80px;
+            border: 3px solid #00ff80;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #00ff80;
+            background: rgba(0, 255, 128, 0.05);
+        }
+        
+        .step-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        
+        .step-desc {
+            color: #888;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        /* Stats Section */
+        .stats-section {
+            padding: 80px 20px;
+            background: rgba(0, 10, 5, 0.5);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .stat {
+            padding: 20px;
+        }
+        
+        .stat-number {
+            font-size: 48px;
+            font-weight: 800;
+            color: #00ff80;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            color: #888;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            padding: 100px 20px;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(0, 255, 128, 0.05) 0%, transparent 100%);
+        }
+        
+        .cta-title {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #00ff80 0%, #00cc66 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .cta-subtitle {
+            font-size: 18px;
+            color: #888;
+            margin-bottom: 40px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        /* Footer */
+        .footer {
+            padding: 40px 20px;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .footer-content {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .footer-links {
+            margin-top: 20px;
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .footer-links a {
+            color: #00ff80;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: #00cc66;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .brand-name { font-size: 48px; }
+            .tagline { font-size: 20px; }
+            .section-title { font-size: 28px; }
+            .features-grid { grid-template-columns: 1fr; }
+            .cta-buttons { 
+                flex-direction: column; 
+                align-items: center;
+            }
+            .logo { max-width: 180px; }
+            .stat-number { font-size: 36px; }
+            .step-number { width: 70px; height: 70px; }
+        }
+    </style>
 </head>
 <body>
-
-<header class="top">
-  <div class="brand">
-    <div class="bmark"><svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-      <circle cx="16" cy="16" r="12.5" stroke="rgba(255,255,255,.12)" stroke-width="2"></circle>
-      <circle cx="16" cy="16" r="12.5" stroke="#ff7a45" stroke-width="2.5" stroke-dasharray="44 78" transform="rotate(-90 16 16)" style="filter:drop-shadow(0 0 6px rgba(255,122,69,.7))"></circle>
-      <circle cx="16" cy="16" r="6.5" stroke="#ff5d5d" stroke-width="1.6" stroke-dasharray="20 21" transform="rotate(90 16 16)" opacity=".8"></circle>
-      <circle cx="16" cy="16" r="3" fill="#ff7a45"></circle></svg></div>
-    <div><div class="btt">FOINIK</div><div class="bsub">AI Security Posture Mapper</div></div>
-  </div>
-  <div class="top-mid">
-    <div class="tm"><span class="k">Assessment</span><span class="v" id="asmt">AIS-000</span></div>
-    <div class="tm"><span class="k">Signature</span><span class="v" id="sig">SIG·000000</span></div>
-    <div class="tm"><span class="k">Architecture</span><span class="v" id="arch">0 STAGED</span></div>
-  </div>
-  <div class="top-r">
-    <div class="status" id="status"><span class="beacon"></span> <span id="statusTxt">IDLE</span></div>
-    <div class="clock" id="clock">00:00:00</div>
-  </div>
-</header>
-
-<div class="shell">
-  <!-- LEFT -->
-  <aside>
-    <p class="sh"><span class="idx">01</span> System Profile</p>
-    <p class="sh-note">Set your architecture context. Choices adjust the threat model and risk scoring.</p>
-    <div id="dims"></div>
-
-    <div class="divider"></div>
-    <p class="sh"><span class="idx">02</span> Component Staging</p>
-    <p class="sh-note">Stage the components your system actually uses. Each appears on the canvas and links into the data flow.</p>
-    <div id="board"></div>
-
-    <div class="side-foot">
-      <div class="cnt" id="cnt"><b>0</b> COMPONENTS · 0 LINKS</div>
-      <button class="cta" id="scan" disabled=""><span id="scanTxt">Run adversarial scan</span></button>
-      <button class="reset" id="reset">Reset assessment</button>
-    </div>
-  </aside>
-
-  <!-- CENTER -->
-  <main>
-    <div class="canvas-head">
-      <div><span class="lbl">Architecture Canvas · Live</span></div>
-      <div id="chNodes">Nodes 0 · Links 0</div>
-      <div id="chCtx">no profile set</div>
-    </div>
-    <svg id="svg"></svg>
-    <div class="tip" id="tip"></div>
-    <div class="empty-hint" id="hint">
-      <div class="eh-glyph"><span></span><span></span><span></span><i></i></div>
-      <div class="big">Map your AI system. Watch FOINIK probe it live.</div>
-      <div class="sm">Your architecture appears here as a live data-flow map, entry → model → knowledge → tools → output → infra. Hover any node for details once staged.</div>
-      <div class="steps">
-        <div class="step"><span>1</span>Set system profile</div>
-        <div class="step"><span>2</span>Stage components</div>
-        <div class="step"><span>3</span>Run the scan</div>
-      </div>
-    </div>
-  </main>
-
-  <!-- RIGHT -->
-  <section class="intel">
-    <p class="sh"><span class="idx">03</span> Threat Intelligence <span id="intelState" style="margin-left:auto;color:var(--faint);font-size:10px;">STANDBY</span></p>
-    <div id="intel">
-      <div class="intel-idle">
-        &gt; awaiting architecture<br>
-        &gt; stage components and run scan<br>
-        &gt; threat vectors will resolve here
-      </div>
-    </div>
-  </section>
-</div>
-
-<script>
-
-
-/* ---------- ICONS ---------- */
-const IC={
- model:'<svg width="15" height="15" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="14" height="14" rx="3" stroke="currentColor" stroke-width="1.3"/><path d="M6 9h6M9 6v6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>',
- chat:'<svg width="15" height="15" viewBox="0 0 18 18" fill="none"><path d="M3 4.5h12v7H8l-3 2.5v-2.5H3z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>',
- input:'<svg width="15" height="15" viewBox="0 0 18 18" fill="none"><path d="M3 9h9M9 5l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
- api:'<svg width="15" height="15" viewBox="0 0 18 18" fill="none"><path d="M6 3L3 9l3 6M12 3l3 6-3 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
- rag:'<svg width="15" height="15" viewBox="0 0 18 18" fill="none"><path d="M3 5c0-1.1 2.7-2 6-2s6 .9 6 2-2.7 2-6 2-6-.9-6-2z" stroke="currentColor" stroke-width="1.3"/><path d="M3 5v8c0 1.1 2.7 2 6 2s6-.9 6-2V5" stroke="currentColor" stroke-width="1.3"/></svg>',
- vector:'<svg width="15" height="15" viewBox="0 0 18 18" fill="none"><circle cx="5" cy="6" r="1.6" stroke="currentColor" stroke-width="1.2"/><circle cx="13" cy="5" r="1.6" stroke="currentColor" stroke-width="1.2"/><circle cx="9" cy="12" r="1.6" stroke="currentColor" stroke-width="1.2"/><path d="M6.4 6.6l5-.8M6.2 7.4l2 3.2M11.6 6.4l-1.4 4" stroke="currentColor" stroke-width="1"/></svg>',
- mem:'<svg width="15" height="15" viewBox="0 0 18 18" fill="none"><rect x="3" y="4" width="12" height="10" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M6 4V2.5M9 4V2.5M12 4V2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>',
- agent:'<svg width="15" height="15" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="6" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M4 15c0-2.8 2.2-5 5-5s5 2.2 5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>',
- tool:'<svg width="15" height="15" viewBox="0 0 18 18" fill="none"><path d="M11.5 2.5a3.5 3.5 0 00-3 5.3L3 13.3 4.7 15l5.5-5.5a3.5 3.5 0 004.3-4.6l-2 2-1.4-1.4 2-2a3.5 3.5 0 00-1.6-.9z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>',
- mcp:'<svg width="15" height="15" viewBox="0 0 18 18" fill="none"><rect x="2.5" y="2.5" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.3"/><rect x="10.5" y="2.5" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.3"/><rect x="6.5" y="10.5" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.3"/></svg>',
- code:'<svg width="15" height="15" viewBox="0 0 18 18" fill="none"><path d="M6.5 6L3.5 9l3 3M11.5 6l3 3-3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
- multi:'<svg width="15" height="15" viewBox="0 0 18 18" fill="none"><circle cx="6" cy="6" r="2.5" stroke="currentColor" stroke-width="1.3"/><circle cx="12" cy="6" r="2.5" stroke="currentColor" stroke-width="1.3"/><circle cx="9" cy="12" r="2.5" stroke="currentColor" stroke-width="1.3"/></svg>',
- render:'<svg width="15" height="15" viewBox="0 0 18 18" fill="none"><rect x="2.5" y="3.5" width="13" height="11" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 6.5h13" stroke="currentColor" stroke-width="1.3"/></svg>',
- email:'<svg width="15" height="15" viewBox="0 0 18 18" fill="none"><rect x="2.5" y="4" width="13" height="10" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M3 5l6 4.5L15 5" stroke="currentColor" stroke-width="1.3"/></svg>',
- filter:'<svg width="15" height="15" viewBox="0 0 18 18" fill="none"><path d="M3 4h12l-4.5 5.5V14l-3 1.5V9.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>',
- train:'<svg width="15" height="15" viewBox="0 0 18 18" fill="none"><path d="M2.5 13l4-5 3 2.5L15 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
- ext:'<svg width="15" height="15" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 9h13M9 2.5c1.8 1.7 2.8 4 2.8 6.5S10.8 14.3 9 15.5" stroke="currentColor" stroke-width="1.1"/></svg>',
- host:'<svg width="15" height="15" viewBox="0 0 18 18" fill="none"><rect x="2.5" y="3" width="13" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="2.5" y="11" width="13" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>',
- tenant:'<svg width="15" height="15" viewBox="0 0 18 18" fill="none"><rect x="3.5" y="7.5" width="11" height="7" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M6 7.5V5.5a3 3 0 016 0v2" stroke="currentColor" stroke-width="1.3"/></svg>',
- guard:'<svg width="15" height="15" viewBox="0 0 18 18" fill="none"><path d="M9 2l5 2v4c0 3.5-2.2 6-5 7-2.8-1-5-3.5-5-7V4z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>',
- log:'<svg width="15" height="15" viewBox="0 0 18 18" fill="none"><rect x="3" y="3" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M6 7h6M6 9.5h6M6 12h3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>',
- dia:'<svg width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M9 2l7 7-7 7-7-7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>'
-};
-
-/* ---------- PROFILE DIMENSIONS ---------- */
-const DIMENSIONS=[
- {id:'deploy', label:'Deployment', single:true, opts:[
-   {id:'cloud_api',  txt:'Cloud API',    risk:0},
-   {id:'self_host',  txt:'Self-hosted',  risk:2, adds:['selfhost']},
-   {id:'hybrid',     txt:'Hybrid',       risk:2, adds:['selfhost']},
-   {id:'on_device',  txt:'On-device / edge', risk:1}
- ]},
- {id:'iface', label:'Primary interface', single:true, opts:[
-   {id:'chatbot', txt:'Chatbot / assistant', risk:1, adds:['user_input']},
-   {id:'api_prod',txt:'API / backend',       risk:1},
-   {id:'agentic', txt:'Autonomous agent',    risk:3, adds:['agent'], risky:true},
-   {id:'batch',   txt:'Batch / pipeline',    risk:0}
- ]},
- {id:'data', label:'Data sensitivity', single:true, opts:[
-   {id:'public',    txt:'Public only', risk:0},
-   {id:'internal',  txt:'Internal / business', risk:1},
-   {id:'regulated', txt:'Regulated (PII/PHI/PCI)', risk:2, risky:true},
-   {id:'secret',    txt:'Secret / IP-critical', risk:3, risky:true}
- ]},
- {id:'model', label:'Model type', single:true, opts:[
-   {id:'frontier', txt:'Frontier API', risk:0},
-   {id:'open_w',   txt:'Open-weights', risk:1, adds:['selfhost']},
-   {id:'finetuned',txt:'Fine-tuned', risk:2, adds:['finetune']},
-   {id:'multimod', txt:'Multimodal', risk:1}
- ]}
-];
-
-/* ---------- COMPONENTS (tiered pipeline) ---------- */
-/* tier order defines left->right canvas columns */
-const TIERS=['entry','model','data','action','output','infra'];
-const TIER_LABEL={entry:'ENTRY',model:'MODEL',data:'KNOWLEDGE / DATA',action:'TOOLS / ACTIONS',output:'OUTPUT',infra:'INFRASTRUCTURE'};
-
-const COMPONENTS=[
- // ENTRY
- {id:'user_input', code:'IN-01', nm:'Untrusted user input', ic:'input', tier:'entry', seg:'entry', sev:'h', ds:'End users submit free-form prompts.'},
- {id:'api_ingress',code:'IN-02', nm:'API ingress', ic:'api', tier:'entry', seg:'entry', sev:'m', ds:'Programmatic requests from clients.'},
- {id:'file_upload',code:'IN-03', nm:'File / document upload', ic:'render', tier:'entry', seg:'entry', sev:'h', ds:'Users upload docs, images, PDFs.'},
- {id:'guardrail_in',code:'IN-04',nm:'Input guardrail', ic:'guard', tier:'entry', seg:'entry', sev:'l', ds:'Filters/classifiers on inbound prompts.', control:true},
- // MODEL
- {id:'model', code:'MDL-01', nm:'LLM / core model', ic:'model', tier:'model', seg:'model', sev:'h', ds:'The language model in the loop.'},
- {id:'sys_prompt',code:'MDL-02',nm:'System prompt / policy', ic:'log', tier:'model', seg:'model', sev:'m', ds:'Instructions steering the model.'},
- {id:'memory', code:'MDL-03', nm:'Conversation memory', ic:'mem', tier:'model', seg:'model', sev:'h', ds:'Persistent history / long-term memory.'},
- {id:'finetune',code:'MDL-04', nm:'Fine-tuning pipeline', ic:'train', tier:'model', seg:'model', sev:'h', ds:'You train or fine-tune the model.'},
- // DATA / KNOWLEDGE
- {id:'rag', code:'DAT-01', nm:'RAG / retrieval', ic:'rag', tier:'data', seg:'data', sev:'c', ds:'Retrieved docs injected into context.'},
- {id:'vectordb',code:'DAT-02', nm:'Vector store', ic:'vector', tier:'data', seg:'data', sev:'h', ds:'Embedding index behind retrieval.'},
- {id:'external',code:'DAT-03', nm:'External content fetch', ic:'ext', tier:'data', seg:'data', sev:'c', ds:'Pulls web/email/3rd-party into context.'},
- {id:'sqldata', code:'DAT-04', nm:'Structured data / SQL', ic:'host', tier:'data', seg:'data', sev:'h', ds:'Model queries databases or internal APIs.'},
- // ACTION / TOOLS
- {id:'agent', code:'ACT-01', nm:'Autonomous agent', ic:'agent', tier:'action', seg:'action', sev:'c', ds:'Model plans & acts in a loop.'},
- {id:'tools', code:'ACT-02', nm:'Tool / function calling', ic:'tool', tier:'action', seg:'action', sev:'c', ds:'Model invokes functions or APIs.'},
- {id:'mcp', code:'ACT-03', nm:'MCP servers', ic:'mcp', tier:'action', seg:'action', sev:'c', ds:'Model Context Protocol tool providers.'},
- {id:'codeexec',code:'ACT-04', nm:'Code execution', ic:'code', tier:'action', seg:'action', sev:'c', ds:'Model-produced code gets run.'},
- {id:'multiagent',code:'ACT-05',nm:'Multi-agent / A2A', ic:'multi', tier:'action', seg:'action', sev:'h', ds:'Agents delegate to each other.'},
- // OUTPUT
- {id:'render', code:'OUT-01', nm:'Renders output (UI)', ic:'render', tier:'output', seg:'output', sev:'c', ds:'Output shown as HTML/markdown.'},
- {id:'downstream',code:'OUT-02',nm:'Downstream actions', ic:'email', tier:'output', seg:'output', sev:'h', ds:'Output sends emails / triggers systems.'},
- {id:'guardrail_out',code:'OUT-03',nm:'Output guardrail', ic:'filter', tier:'output', seg:'output', sev:'l', ds:'DLP / safety filter on responses.', control:true},
- {id:'approval',code:'OUT-04', nm:'Human approval gate', ic:'guard', tier:'output', seg:'output', sev:'l', ds:'A person approves consequential actions.', control:true},
- // INFRA
- {id:'selfhost',code:'INF-01', nm:'Self-hosted inference', ic:'host', tier:'infra', seg:'infra', sev:'h', ds:'You run the model endpoint.'},
- {id:'multitenant',code:'INF-02',nm:'Multi-tenant', ic:'tenant', tier:'infra', seg:'infra', sev:'c', ds:'Customers share one deployment.'},
- {id:'observability',code:'INF-03',nm:'Logging / observability', ic:'log', tier:'infra', seg:'infra', sev:'l', ds:'Audit trail of prompts & actions.', control:true}
-];
-const CMAP=Object.fromEntries(COMPONENTS.map(c=>[c.id,c]));
-
-/* ---------- LOGICAL DATA-FLOW EDGES (auto links) ---------- */
-/* directed a->b; only drawn if both endpoints staged */
-const EDGES=[
- ['user_input','guardrail_in'],['api_ingress','guardrail_in'],['file_upload','guardrail_in'],
- ['guardrail_in','model'],
- ['user_input','model'],['api_ingress','model'],['file_upload','model'],
- ['sys_prompt','model'],['memory','model'],['finetune','model'],
- ['rag','model'],['vectordb','rag'],['external','rag'],['external','model'],['sqldata','model'],['tools','sqldata'],
- ['model','agent'],['model','tools'],['model','mcp'],['model','codeexec'],
- ['agent','tools'],['agent','mcp'],['agent','codeexec'],['agent','multiagent'],
- ['tools','downstream'],['mcp','downstream'],['codeexec','downstream'],
- ['agent','approval'],['approval','downstream'],
- ['model','render'],['model','guardrail_out'],['guardrail_out','render'],['guardrail_out','downstream'],
- ['model','selfhost'],['selfhost','multitenant'],['model','observability'],['agent','observability']
-];
-
-/* ---------- THREAT VECTOR RULES ---------- */
-/* req fires if ANY req staged (all:true => all). mitigated_by: control that lowers it. */
-const SEVW={c:14,h:7,m:3};
-const SEVNAME={c:'critical',h:'high',m:'medium'};
-const SEVORD={c:0,h:1,m:2};
-
-const RULES=[
- {id:'TH-001', req:['user_input','api_ingress','file_upload'], all:false, and:['model'], sev:'h', grp:'input',
-  name:'Direct Prompt Injection', tags:['model'], mit:'guardrail_in',
-  d:'Attacker-controlled input overrides system instructions, extracts the system prompt, or steers behavior. If any user input reaches the model, assume the system prompt is recoverable.',
-  f:'Keep system instructions structurally separated from user content, constrain what the model may do, and never let one turn escalate privileges. Deploy an input guardrail / prompt-aware gateway.',
-  r:{'OWASP':'LLM01 Prompt Injection','MITRE ATLAS':'AML.T0051','NIST AI RMF':'MEASURE 2.7','Google SAIF':'Application · input validation','EU AI Act':'Art. 15','CWE':'CWE-1427'}},
- {id:'TH-002', req:['rag','external'], sev:'c', grp:'data', tags:['rag','external'], mit:'guardrail_in',
-  name:'Indirect Prompt Injection',
-  d:'A poisoned document, web page, or email carries hidden instructions the model then obeys. This is the top risk for any retrieval or content-fetching system.',
-  f:'Wrap untrusted content in clear delimiters, instruct the model to treat it as data only, and never let retrieved content trigger privileged tool calls without validation. Track content provenance.',
-  r:{'OWASP':'LLM01 Prompt Injection','MITRE ATLAS':'AML.T0051.001','NIST AI RMF':'MEASURE 2.7','Google SAIF':'Data · untrusted content','EU AI Act':'Art. 15','CWE':'CWE-94'}},
- {id:'TH-003', req:['rag'], and:['vectordb'], sev:'h', grp:'data', tags:['rag','vectordb'],
-  name:'Vector / Embedding Access Bypass',
-  d:'Without per-user authorization on retrieval, the vector store becomes a confused deputy, users retrieve embeddings and documents they should never see. Embedding inversion can also reconstruct source text.',
-  f:'Apply document-level authorization at query time (metadata filters tied to identity), not just at ingestion. Partition indexes and never let the model decide what a user may see.',
-  r:{'OWASP':'LLM08 Vector & Embedding','MITRE ATLAS':'AML.T0057','NIST AI RMF':'MEASURE 2.6','Google SAIF':'Data · storage access','EU AI Act':'Art. 10','CWE':'CWE-284'}},
- {id:'TH-004', req:['memory'], sev:'h', grp:'data', tags:['memory'],
-  name:'Persistent Memory Poisoning',
-  d:'Poisoned memory turns a one-shot injection into a durable backdoor that re-triggers on every future turn, potentially across users if memory is not scoped.',
-  f:'Isolate memory by user/tenant, validate what gets written to long-term memory, and expire or review persisted instructions.',
-  r:{'OWASP':'LLM01 Prompt Injection','MITRE ATLAS':'AML.T0070','NIST AI RMF':'MANAGE 2.2','Google SAIF':'Data · storage integrity','EU AI Act':'Art. 15','CWE':'CWE-349'}},
- {id:'TH-005', req:['finetune'], sev:'h', grp:'data', tags:['finetune'],
-  name:'Training / Fine-tune Data Poisoning',
-  d:'Poisoned training or fine-tuning data can implant backdoors or bias that survive into production behavior.',
-  f:'Track dataset lineage, scan for anomalous samples, avoid training on unvetted user data, and sign/version datasets.',
-  r:{'OWASP':'LLM04 Data & Model Poisoning','MITRE ATLAS':'AML.T0020','NIST AI RMF':'MEASURE 2.8','Google SAIF':'Training · data poisoning','EU AI Act':'Art. 10','CWE':'CWE-506'}},
- {id:'TH-006', req:['external'], sev:'h', grp:'data', tags:['external'],
-  name:'SSRF via Content Fetch',
-  d:'A model told to fetch a link can be pointed at internal services, cloud metadata endpoints, or localhost.',
-  f:'Route all fetches through an allowlist and egress proxy that blocks private IP ranges and metadata endpoints. Never fetch arbitrary model-chosen URLs.',
-  r:{'OWASP':'LLM01 Prompt Injection','MITRE ATLAS':'AML.T0049','NIST AI RMF':'MANAGE 2.3','Google SAIF':'Infrastructure · egress','EU AI Act':'Art. 15','CWE':'CWE-918'}},
- {id:'TH-007', req:['tools','mcp'], sev:'c', grp:'action', tags:['tools','mcp'],
-  name:'Excessive Agency / Tool Authz Bypass',
-  d:'If the model can call a tool, an attacker controlling the prompt can too. Excessive agency is how injection becomes real-world damage.',
-  f:'Enforce authorization on the tool handler, check the acting user\'s rights before executing, not in the prompt. Scope each tool to least privilege; give each agent its own identity.',
-  r:{'OWASP':'LLM06 Excessive Agency','MITRE ATLAS':'AML.T0053','NIST AI RMF':'MANAGE 2.3','Google SAIF':'Application · least privilege','EU AI Act':'Art. 14','CWE':'CWE-862'}},
- {id:'TH-008', req:['tools','mcp'], sev:'h', grp:'action', tags:['tools','mcp'],
-  name:'Unvalidated Tool Output',
-  d:'Tool results are another untrusted channel, a compromised or malicious tool can inject instructions back into the loop.',
-  f:'Treat tool/API responses as untrusted, validate schemas, and don\'t let raw output silently trigger further privileged actions.',
-  r:{'OWASP':'LLM05 Improper Output','MITRE ATLAS':'AML.T0051','NIST AI RMF':'MEASURE 2.7','Google SAIF':'Application · validation','EU AI Act':'Art. 15','CWE':'CWE-20'}},
- {id:'TH-009', req:['agent'], sev:'c', grp:'action', tags:['agent'], mit:'approval',
-  name:'Autonomous Action Without Human Gate',
-  d:'An autonomous loop under injection chains actions faster than anyone can react, deleting data, sending funds, emailing customers.',
-  f:'Define an impact threshold; anything destructive, external-facing, or costly pauses for explicit human approval. Log every action with its trigger.',
-  r:{'OWASP':'LLM06 Excessive Agency','MITRE ATLAS':'AML.T0053','NIST AI RMF':'MANAGE 1.3','Google SAIF':'Adaptation · human oversight','EU AI Act':'Art. 14','CWE':'CWE-284'}},
- {id:'TH-010', req:['agent'], sev:'m', grp:'action', tags:['agent'],
-  name:'Unbounded Consumption (Denial-of-Wallet)',
-  d:'Unbounded planning loops cause runaway cost, infinite retries, and resource exhaustion, sometimes attacker-induced (denial-of-wallet).',
-  f:'Cap iterations, wall-clock time, and spend per task; token-level rate limits and per-tenant budgets; fail closed when a limit is hit.',
-  r:{'OWASP':'LLM10 Unbounded Consumption','MITRE ATLAS':'AML.T0034','NIST AI RMF':'MEASURE 2.7','Google SAIF':'Infrastructure · resource caps','EU AI Act':'Art. 15','CWE':'CWE-400'}},
- {id:'TH-011', req:['mcp'], sev:'c', grp:'action', tags:['mcp'],
-  name:'MCP Server Trust / Rug-Pull',
-  d:'A malicious or compromised MCP server can expose rug-pull tools, hidden instructions in tool descriptions, or over-broad scopes. Tool descriptions are model-visible and can carry injection.',
-  f:'Only connect vetted MCP servers, pin versions, review tool descriptions for embedded instructions, isolate each with least-privilege credentials, and alert on tool-definition changes.',
-  r:{'OWASP':'LLM03 Supply Chain','MITRE ATLAS':'AML.T0010','NIST AI RMF':'MAP 4.1','Google SAIF':'Infrastructure · supply chain','EU AI Act':'Art. 15','CWE':'CWE-829'}},
- {id:'TH-012', req:['codeexec'], sev:'c', grp:'action', tags:['codeexec'],
-  name:'Sandbox Escape / RCE',
-  d:'Executing model output is remote code execution by design. Injection turns it into arbitrary code execution on your infrastructure.',
-  f:'Run in an isolated ephemeral sandbox (container/microVM) with egress denied by default, no host mounts, no ambient credentials, and strict resource caps.',
-  r:{'OWASP':'LLM05 Improper Output','MITRE ATLAS':'AML.T0050','NIST AI RMF':'MANAGE 2.3','Google SAIF':'Infrastructure · isolation','EU AI Act':'Art. 15','CWE':'CWE-94'}},
- {id:'TH-013', req:['multiagent'], sev:'h', grp:'action', tags:['multiagent'],
-  name:'Inter-Agent Trust Abuse',
-  d:'Agent-to-agent messages are another injection surface; a compromised agent can manipulate its peers or escalate privilege across the swarm.',
-  f:'Authenticate agent identities, validate message schemas, and don\'t let one agent grant another privileges it doesn\'t independently have.',
-  r:{'OWASP':'LLM06 Excessive Agency','MITRE ATLAS':'AML.T0053','NIST AI RMF':'MAP 4.1','Google SAIF':'Application · agent identity','EU AI Act':'Art. 14','CWE':'CWE-863'}},
- {id:'TH-014', req:['render'], sev:'c', grp:'output', tags:['render'], mit:'guardrail_out',
-  name:'Output XSS / Markdown Exfiltration',
-  d:'Rendered raw, model output is stored XSS. Injection can make the model emit scripts, malicious links, or data-exfiltrating markdown images.',
-  f:'Escape/sanitize output, use a strict CSP, disable auto-loading of model-supplied image URLs, and render markdown through a safe allowlist.',
-  r:{'OWASP':'LLM05 Improper Output','MITRE ATLAS':'AML.T0048','NIST AI RMF':'MEASURE 2.7','Google SAIF':'Application · output handling','EU AI Act':'Art. 15','CWE':'CWE-79'}},
- {id:'TH-015', req:['downstream'], sev:'h', grp:'output', tags:['downstream'], mit:'approval',
-  name:'Untrusted Output to Real-World Action',
-  d:'When model output triggers emails, tickets, or transactions, injection turns a prompt into an unauthorized real-world action.',
-  f:'Require validation/approval between model output and any consequential downstream action; template and constrain what actions are possible.',
-  r:{'OWASP':'LLM06 Excessive Agency','MITRE ATLAS':'AML.T0053','NIST AI RMF':'MANAGE 1.3','Google SAIF':'Adaptation · human oversight','EU AI Act':'Art. 14','CWE':'CWE-807'}},
- {id:'TH-016', req:['model'], sev:'m', grp:'output', tags:['model'], mit:'guardrail_out',
-  name:'Sensitive Information Disclosure',
-  d:'Models can surface training data, system context, or retrieved data the user shouldn\'t receive. Includes system-prompt leakage.',
-  f:'Apply output filtering/DLP for PII and secrets, minimize sensitive data placed in context, and never rely on the system prompt to stay secret.',
-  r:{'OWASP':'LLM02 Sensitive Info Disclosure','MITRE ATLAS':'AML.T0057','NIST AI RMF':'MEASURE 2.10','Google SAIF':'Data · privacy','EU AI Act':'Art. 10','CWE':'CWE-200'}},
- {id:'TH-017', req:['multitenant'], sev:'c', grp:'infra', tags:['multitenant'],
-  name:'Cross-Tenant Data Leakage',
-  d:'One customer seeing another\'s data via shared context, cache, memory, or retrieval is a breach.',
-  f:'Enforce tenant scoping on every data path (vector store, memory, cache, logs), and test explicitly for cross-tenant bleed.',
-  r:{'OWASP':'LLM02 Sensitive Info Disclosure','MITRE ATLAS':'AML.T0057','NIST AI RMF':'MEASURE 2.6','Google SAIF':'Infrastructure · isolation','EU AI Act':'Art. 10','CWE':'CWE-668'}},
- {id:'TH-018', req:['selfhost'], sev:'h', grp:'infra', tags:['selfhost'],
-  name:'Exposed Inference Endpoint',
-  d:'Self-hosted inference servers (e.g. exposed Ollama/vLLM) are frequently left open, allowing free use, prompt theft, or pivoting.',
-  f:'Require authentication, bind to internal networks, put the endpoint behind a gateway, and monitor for anomalous usage.',
-  r:{'OWASP':'LLM10 Unbounded Consumption','MITRE ATLAS':'AML.T0040','NIST AI RMF':'MANAGE 2.3','Google SAIF':'Infrastructure · foundations','EU AI Act':'Art. 15','CWE':'CWE-306'}},
- {id:'TH-019', req:['selfhost','finetune'], sev:'m', grp:'infra', tags:['selfhost','finetune'],
-  name:'Model Supply-Chain Integrity',
-  d:'Tampered weights, malicious model files (pickle deserialization), or poisoned dependencies compromise you before inference even runs.',
-  f:'Verify checksums/signatures on weights, prefer safetensors over pickle formats, and scan the ML dependency chain (AI-BOM).',
-  r:{'OWASP':'LLM03 Supply Chain','MITRE ATLAS':'AML.T0010','NIST AI RMF':'MAP 4.1','Google SAIF':'Infrastructure · supply chain','EU AI Act':'Art. 15','CWE':'CWE-502'}},
- {id:'TH-021', req:['sqldata'], sev:'c', grp:'data', tags:['sqldata'],
-  name:'Prompt-to-SQL Injection / Mass Exfiltration',
-  d:'When the model writes queries against live business data, injection becomes SQL injection with a natural-language front end, attackers can dump tables, bypass row filters, or mutate records.',
-  f:'Use parameterized query templates instead of free-form generated SQL, run with a read-only least-privilege DB role scoped per user, validate generated queries against an allowlist, and cap result sizes.',
-  r:{'OWASP':'LLM05 Improper Output','MITRE ATLAS':'AML.T0051','NIST AI RMF':'MEASURE 2.7','Google SAIF':'Application · output handling','EU AI Act':'Art. 15','CWE':'CWE-89'}},
- {id:'TH-020', req:['model'], sev:'m', grp:'infra', tags:['model'], mit:'observability',
-  name:'No Detection / Audit Trail',
-  d:'Without an audit trail you can\'t detect injection campaigns or reconstruct what the system did during an incident.',
-  f:'Log inputs, decisions, and tool invocations with tenant/user context; redact sensitive fields; alert on anomalies like tool-call spikes.',
-  r:{'OWASP':'LLM06 Excessive Agency','MITRE ATLAS':'AML.T0040','NIST AI RMF':'MEASURE 3.3','Google SAIF':'Detection & response','EU AI Act':'Art. 12','CWE':'CWE-778'}}
-];
-
-/* ---------- STATE ---------- */
-const staged=new Set();
-const profile={};        // dimId -> optId
-let scanned=false;
-let scanRunning=false;
-
-/* ---------- BUILD DIMENSIONS ---------- */
-const dimsEl=document.getElementById('dims');
-DIMENSIONS.forEach(d=>{
-  const g=document.createElement('div'); g.className='dim-group';
-  g.innerHTML=`<div class="dim-label">${d.label}</div>`;
-  const row=document.createElement('div'); row.className='chips';
-  d.opts.forEach(o=>{
-    const c=document.createElement('div');
-    c.className='chip'+(o.risky?' risky':''); c.dataset.dim=d.id; c.dataset.opt=o.id;
-    c.textContent=o.txt;
-    c.addEventListener('click',()=>pickDim(d,o,c));
-    row.appendChild(c);
-  });
-  g.appendChild(row); dimsEl.appendChild(g);
-});
-function pickDim(d,o,el){
-  const prev=profile[d.id];
-  document.querySelectorAll(`.chip[data-dim="${d.id}"]`).forEach(x=>x.classList.remove('on'));
-  if(prev===o.id){ delete profile[d.id]; if(o.adds) o.adds.forEach(a=>{/*keep staged; user controls*/}); }
-  else { profile[d.id]=o.id; el.classList.add('on');
-    if(o.adds) o.adds.forEach(a=>{ if(!staged.has(a)){ staged.add(a); syncComp(a);} }); }
-  updateCtx(); redraw(); recount(); if(scanned) softInvalidate();
-}
-function updateCtx(){
-  const parts=[];
-  DIMENSIONS.forEach(d=>{ if(profile[d.id]){ const o=d.opts.find(x=>x.id===profile[d.id]); parts.push(o.txt); }});
-  document.getElementById('chCtx').textContent = parts.length? parts.join(' · ') : 'no profile set';
-}
-
-/* ---------- BUILD COMPONENT BOARD (grouped by tier) ---------- */
-const board=document.getElementById('board');
-const segTitle={entry:'Entry Surface',model:'Model Layer',data:'Knowledge / Data',action:'Tools / Actions',output:'Output',infra:'Infrastructure'};
-TIERS.forEach(t=>{
-  const h=document.createElement('div'); h.className='seg-h seg-'+t;
-  h.innerHTML=`<span class="dia"></span><span class="nm">${segTitle[t]}</span>`;
-  board.appendChild(h);
-  COMPONENTS.filter(c=>c.tier===t).forEach(c=>{
-    const el=document.createElement('div'); el.className='comp'; el.dataset.id=c.id;
-    const sevTxt=c.control?'CONTROL':SEVNAME[c.sev].toUpperCase();
-    const sevCls=c.control?'l':c.sev;
-    el.innerHTML=`<div class="ico">${IC[c.ic]}</div>
-      <div class="b"><div class="nm">${c.nm} <span class="code">${c.code}</span></div><div class="ds">${c.ds}</div></div>
-      <div class="sev ${sevCls}">${sevTxt}<span class="dot"></span></div>`;
-    el.addEventListener('click',()=>toggleComp(c.id,el));
-    board.appendChild(el);
-  });
-});
-function syncComp(id){
-  const el=document.querySelector(`.comp[data-id="${id}"]`);
-  if(el) el.classList.toggle('on', staged.has(id));
-}
-function toggleComp(id,el){
-  if(staged.has(id)) staged.delete(id); else staged.add(id);
-  el.classList.toggle('on', staged.has(id));
-  redraw(); recount(); if(scanned) softInvalidate();
-}
-
-/* ---------- COUNTS / HEADER ---------- */
-/* fallback links: used only when a staged node would otherwise float unconnected */
-const FALLBACK={vectordb:'model',multiagent:'model',downstream:'model',approval:'model',multitenant:'model',observability:'model'};
-function activeEdges(){
-  const base=EDGES.filter(([a,b])=>staged.has(a)&&staged.has(b));
-  const linked=new Set(); base.forEach(([a,b])=>{linked.add(a);linked.add(b);});
-  const extra=[];
-  staged.forEach(id=>{
-    if(!linked.has(id)&&FALLBACK[id]&&staged.has(FALLBACK[id])) extra.push([FALLBACK[id],id]);
-  });
-  return base.concat(extra);
-}
-function recount(){
-  const n=staged.size, l=activeEdges().length;
-  document.getElementById('cnt').innerHTML=`<b>${n}</b> COMPONENT${n===1?'':'S'} · ${l} LINK${l===1?'':'S'}`;
-  document.getElementById('scan').disabled = n===0 || scanRunning;
-  document.getElementById('arch').textContent = `${n} STAGED`;
-  document.getElementById('chNodes').textContent = `Nodes ${n} · Links ${l}`;
-  // signatures
-  const sig = n? 'SIG·'+hash(([...staged].sort().join(',')+JSON.stringify(profile))) : 'SIG·000000';
-  document.getElementById('sig').textContent = sig;
-  document.getElementById('asmt').textContent = n? 'AIS-'+String(n*7+Object.keys(profile).length*13).padStart(3,'0') : 'AIS-000';
-}
-function hash(s){let h=0;for(let i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))>>>0;}return h.toString(16).slice(0,6).toUpperCase().padStart(6,'0');}
-
-/* ---------- CANVAS RENDER ---------- */
-const svg=document.getElementById('svg');
-const NS='http://www.w3.org/2000/svg';
-function el(tag,attrs){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);return e;}
-
-let nodePos={};
-function layout(){
-  const rect=svg.getBoundingClientRect();
-  const W=rect.width||900,H=rect.height||700;
-  const usedTiers=TIERS.filter(t=>COMPONENTS.some(c=>c.tier===t&&staged.has(c.id)));
-  nodePos={};
-  if(!usedTiers.length)return{W,H,usedTiers};
-  const padX=54,padY=86;
-  const colW=(W-padX*2)/usedTiers.length;
-  const NW=Math.max(138,Math.min(180,colW-26)),NH=62;
-  usedTiers.forEach((t,ti)=>{
-    const cx=padX+colW*ti+colW/2;
-    const nodes=COMPONENTS.filter(c=>c.tier===t&&staged.has(c.id));
-    const gap=(H-padY*2)/nodes.length;
-    nodes.forEach((c,ni)=>{const cy=padY+gap*ni+gap/2;nodePos[c.id]={x:cx-NW/2,y:cy-NH/2,w:NW,h:NH,cx,cy};});
-  });
-  return{W,H,usedTiers,padX,colW};
-}
-function sevStroke(c){if(c.control)return'rgba(52,217,195,.55)';return c.sev==='c'?'rgba(255,93,93,.9)':c.sev==='h'?'rgba(255,182,72,.85)':c.sev==='m'?'rgba(167,139,250,.75)':'rgba(52,217,195,.6)';}
-function sevFill(c){if(c.control)return'rgba(52,217,195,.06)';return c.sev==='c'?'rgba(255,93,93,.07)':c.sev==='h'?'rgba(255,182,72,.06)':c.sev==='m'?'rgba(167,139,250,.06)':'rgba(19,16,24,.92)';}
-function sevDot(c){if(c.control)return'#34d9c3';return c.sev==='c'?'#ff5d5d':c.sev==='h'?'#ffb648':c.sev==='m'?'#a78bfa':'#34d9c3';}
-function edgeColor(a,b){
-  const ca=CMAP[a],cb=CMAP[b];
-  if(ca.control||cb.control)return'rgba(52,217,195,.5)';
-  const worst=SEVORD[ca.sev]<SEVORD[cb.sev]?ca.sev:cb.sev;
-  return worst==='c'?'rgba(255,93,93,.55)':worst==='h'?'rgba(255,182,72,.45)':'rgba(160,168,196,.3)';
-}
-const tip=document.getElementById('tip');
-function showTip(id){
-  const c=CMAP[id],p=nodePos[id];if(!p)return;
-  tip.innerHTML='<div class="tp-h"><span class="tp-code">'+c.code+'</span>'+c.nm+'</div>'+
-    '<div class="tp-d">'+c.ds+'</div>'+
-    '<div class="tp-s" style="color:'+sevDot(c)+'">'+(c.control?'CONTROL: reduces linked risk':'exposure: '+SEVNAME[c.sev])+'</div>';
-  tip.style.display='block';
-  const mr=document.querySelector('main').getBoundingClientRect();
-  let tx=p.cx-112,ty=p.y+p.h+12;
-  tx=Math.max(10,Math.min(tx,mr.width-240));
-  if(ty+130>mr.height)ty=Math.max(10,p.y-130);
-  tip.style.left=tx+'px';tip.style.top=ty+'px';
-}
-function hideTip(){tip.style.display='none';}
-function connectedTo(a,b){return EDGES.some(e=>(e[0]===a&&e[1]===b)||(e[0]===b&&e[1]===a));}
-function highlightLinks(id,on){
-  svg.querySelectorAll('path.link').forEach(pa=>{
-    const rel=pa.dataset.a===id||pa.dataset.b===id;
-    pa.style.opacity=on?(rel?'1':'0.12'):'';
-    pa.style.strokeWidth=(on&&rel)?'2.4':'';
-  });
-  svg.querySelectorAll('.node').forEach(n=>{
-    n.style.opacity=on?((n.dataset.id===id||connectedTo(id,n.dataset.id))?'1':'0.3'):'';
-  });
-}
-function linkPath(A,B){
-  if(Math.abs(A.cx-B.cx)<2){const x1=A.x+A.w,y1=A.cy,x2=B.x+B.w,y2=B.cy,bx=x1+46;return'M '+x1+' '+y1+' C '+bx+' '+y1+', '+bx+' '+y2+', '+x2+' '+y2;}
-  if(B.cx<A.cx){const x1=A.x,y1=A.cy,x2=B.x+B.w,y2=B.cy,mx=(x1+x2)/2;return'M '+x1+' '+y1+' C '+mx+' '+y1+', '+mx+' '+y2+', '+x2+' '+y2;}
-  const x1=A.x+A.w,y1=A.cy,x2=B.x,y2=B.cy,mx=(x1+x2)/2;
-  return'M '+x1+' '+y1+' C '+mx+' '+y1+', '+mx+' '+y2+', '+x2+' '+y2;
-}
-function redraw(){
-  svg.innerHTML='';
-  const L=layout();
-  document.getElementById('hint').style.display=staged.size?'none':'flex';
-  hideTip();
-  if(!staged.size)return;
-  const defs=el('defs',{});
-  defs.innerHTML='<linearGradient id="beam" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="rgba(255,122,69,0)"/><stop offset="0.72" stop-color="rgba(255,122,69,.08)"/><stop offset="1" stop-color="rgba(255,122,69,.5)"/></linearGradient>';
-  svg.appendChild(defs);
-  L.usedTiers.forEach((t,ti)=>{
-    if(ti>0)svg.appendChild(el('line',{x1:L.padX+L.colW*ti,x2:L.padX+L.colW*ti,y1:52,y2:'100%',stroke:'rgba(255,255,255,.035)','stroke-width':1}));
-    const tl=el('text',{class:'tier-cap',x:L.padX+L.colW*ti+L.colW/2,y:36,'text-anchor':'middle'});
-    tl.textContent=TIER_LABEL[t];svg.appendChild(tl);
-  });
-  const gLinks=el('g',{});svg.appendChild(gLinks);
-  activeEdges().forEach(([a,b])=>{
-    if(!nodePos[a]||!nodePos[b])return;
-    const path=el('path',{class:'link'+(scanned?' flow':''),d:linkPath(nodePos[a],nodePos[b]),
-      stroke:scanned?edgeColor(a,b):'rgba(160,168,196,.18)','stroke-width':1.5,opacity:scanned?0.9:0.6});
-    path.dataset.a=a;path.dataset.b=b;
-    gLinks.appendChild(path);
-  });
-  Object.keys(nodePos).forEach(id=>{
-    const c=CMAP[id],p=nodePos[id];
-    const g=el('g',{class:'node'+(scanned?' lit':'')});g.dataset.id=id;
-    const stroke=scanned?sevStroke(c):'rgba(255,255,255,.13)';
-    const fill=scanned?sevFill(c):'rgba(19,16,24,.92)';
-    g.appendChild(el('rect',{class:'body',x:p.x,y:p.y,width:p.w,height:p.h,rx:12,fill,stroke,'stroke-width':1.4}));
-    const dotColor=scanned?sevDot(c):'#8e8798';
-    g.appendChild(el('circle',{class:'n-dot',cx:p.x+15,cy:p.y+19,r:3.5,fill:dotColor,
-      style:scanned&&(c.sev==='c'||c.sev==='h')&&!c.control?'filter:drop-shadow(0 0 5px '+dotColor+')':''}));
-    const t1=el('text',{class:'n-title',x:p.x+26,y:p.y+23});t1.textContent=c.nm;g.appendChild(t1);
-    const t2=el('text',{class:'n-desc',x:p.x+15,y:p.y+44});t2.textContent=c.code;g.appendChild(t2);
-    const st=el('text',{class:'n-stat',x:p.x+p.w-14,y:p.y+44,'text-anchor':'end',fill:scanned?sevDot(c):'#8e8798'});
-    st.textContent=scanned?(c.control?'CONTROL':SEVNAME[c.sev].toUpperCase()):'STAGED';
-    g.appendChild(st);
-    g.addEventListener('mouseenter',()=>{showTip(id);highlightLinks(id,true);});
-    g.addEventListener('mouseleave',()=>{hideTip();highlightLinks(id,false);});
-    svg.appendChild(g);
-  });
-}
-window.addEventListener('resize',()=>{ if(staged.size) redraw(); });
-
-/* ---------- SCAN RULE EVAL ---------- */
-function fires(rule){
-  const anyReq = rule.req.some(r=>staged.has(r));
-  if(!anyReq) return false;
-  if(rule.and){ if(!rule.and.every(r=>staged.has(r))) return false; }
-  return true;
-}
-function profileRisk(){ let r=0; DIMENSIONS.forEach(d=>{ if(profile[d.id]){ const o=d.opts.find(x=>x.id===profile[d.id]); r+=o.risk;}}); return r; }
-function computeVectors(){
-  let fired=RULES.filter(fires).map(r=>({...r}));
-  // mitigation: if the mitigating control is staged, downgrade one severity step
-  fired.forEach(v=>{
-    if(v.mit && staged.has(v.mit)){
-      v.mitigated=true;
-      v.sev = v.sev==='c'?'h':v.sev==='h'?'m':'m';
-    }
-  });
-  const counts={c:0,h:0,m:0}; fired.forEach(v=>counts[v.sev]++);
-  let raw=0; fired.forEach(v=>raw+=SEVW[v.sev]); raw += profileRisk()*4;
-  const idx=Math.min(99,Math.round(99*(1-Math.exp(-raw/70))));
-  fired.sort((a,b)=>SEVORD[a.sev]-SEVORD[b.sev]);
-  return {fired,counts,idx};
-}
-function riskColor(i){return i>=66?'#ff5346':i>=33?'#f2b13c':'#3fe0cf';}
-
-/* ---------- SCAN ANIMATION ---------- */
-const scanBtn=document.getElementById('scan');
-const scanTxt=document.getElementById('scanTxt');
-scanBtn.addEventListener('click',runScan);
-
-function setStatus(mode,txt){
-  const s=document.getElementById('status'); s.className='status '+(mode||'');
-  document.getElementById('statusTxt').textContent=txt;
-}
-function softInvalidate(){ /* keep results but note staleness could be added; simple: leave */ }
-
-function runScan(){
-  if(scanBtn.disabled||scanRunning) return;
-  scanRunning=true; scanned=false;
-  scanBtn.className='cta scanning'; scanTxt.textContent='Scanning\u2026'; scanBtn.disabled=true;
-  scanBtn.style.setProperty('--p','0%');
-  setStatus('scan','SCANNING');
-  document.getElementById('intelState').textContent='SCANNING';
-  document.getElementById('hint').style.display='none';
-  const {fired,counts,idx}=computeVectors();
-  redraw();
-  const nodeIds=Object.keys(nodePos);
-  const edges=activeEdges();
-  const intel=document.getElementById('intel');
-  intel.innerHTML='<div class="scanlog" id="log"></div>';
-  const log=document.getElementById('log');
-  let d=0;
-  const lines=[
-    ['dim','> INITIALIZING ASSESSMENT '+document.getElementById('asmt').textContent],
-    ['dim','> LOADING ARCHITECTURE GRAPH'],
-    ['ok', '> ENUMERATING COMPONENTS ...... '+nodeIds.length+' NODES'],
-    ['ok', '> TRACING DATA FLOW .......... '+edges.length+' LINKS'],
-    ['dim','> MAP ENTRY SURFACE .......... OK'],
-    ['dim','> MAP MODEL LAYER ............ OK'],
-    ['dim','> MAP TOOLS / ACTIONS ........ OK'],
-    ['ok', '> MATCH OWASP LLM TOP 10 ..... '+Math.min(10,fired.length+2)+' HITS'],
-    ['ok', '> MATCH MITRE ATLAS .......... '+(fired.length*2+5)+' CANDIDATES'],
-    ['dim','> CROSS-REF CWE / NIST ....... OK'],
-    ['dim',''],
-    ['warn','> ADVERSARIAL PASS'],
-    ['dim','> SEEDING ATTACK CHAINS ...... 256'],
-    ['dim','> GEN 01 evolving ............ fitness 0.4'+(2+(idx%5))],
-    ['dim','> GEN 02 evolving ............ fitness 0.6'+(3+(idx%3))],
-    ['warn','> GEN 03 evolving ............ fitness 0.8'+(idx%4)],
-    ['crit','> SELECT HIGHEST-FITNESS ..... '+fired.length+' VIABLE'],
-    ['ok', '> COMPILE THREAT INTEL ....... DONE']
-  ];
-  const stepMs=190, totalMs=lines.length*stepMs;
-  const mrect=svg.getBoundingClientRect(),W=mrect.width||900,H=mrect.height||700;
-  const sweep=el('g',{class:'sweep'});
-  const beam=el('rect',{x:-170,y:0,width:150,height:H,fill:'url(#beam)'});
-  const bline=el('line',{x1:-10,x2:-10,y1:0,y2:H,stroke:'#ff7a45','stroke-width':1.5,opacity:.95,style:'filter:drop-shadow(0 0 7px rgba(255,122,69,.9))'});
-  sweep.appendChild(beam);sweep.appendChild(bline);svg.appendChild(sweep);
-  const lit=new Set();
-  function lightIfBoth(){edges.forEach(e=>{if(lit.has(e[0])&&lit.has(e[1]))lightEdge(e);});}
-  const t0=performance.now(), sweepMs=Math.max(2400,totalMs-700);
-  function frame(now){
-    const p=Math.min(1,(now-t0)/sweepMs), x=p*(W+240)-120;
-    beam.setAttribute('x',x-150);bline.setAttribute('x1',x);bline.setAttribute('x2',x);
-    nodeIds.forEach(id=>{const np=nodePos[id];if(np&&x>=np.cx&&!lit.has(id)){lit.add(id);lightNode(id);lightIfBoth();}});
-    if(p<1)requestAnimationFrame(frame); else sweep.remove();
-  }
-  requestAnimationFrame(frame);
-  const tick=setInterval(()=>{
-    const [cls,txt]=lines[d];
-    const ln=document.createElement('div'); ln.className='ln '+cls; ln.textContent=txt||'\u00A0';
-    log.appendChild(ln); log.scrollTop=log.scrollHeight;
-    d++;
-    scanBtn.style.setProperty('--p',Math.round(d/lines.length*100)+'%');
-    if(d>=lines.length){
-      clearInterval(tick);
-      nodeIds.forEach(id=>{if(!lit.has(id)){lit.add(id);lightNode(id);}});
-      edges.forEach(lightEdge);
-      setTimeout(()=>finishScan(fired,counts,idx),420);
-    }
-  },stepMs);
-}
-function lightNode(id){
-  const g=svg.querySelector('.node[data-id="'+id+'"]'); if(!g||g.dataset.lit) return;
-  g.dataset.lit='1'; g.classList.add('lit');
-  const c=CMAP[id], p=nodePos[id];
-  const r=g.querySelector('rect.body');
-  r.setAttribute('stroke',sevStroke(c)); r.setAttribute('fill',sevFill(c));
-  const dot=g.querySelector('.n-dot'); dot.setAttribute('fill',sevDot(c));
-  if((c.sev==='c'||c.sev==='h')&&!c.control) dot.setAttribute('style','filter:drop-shadow(0 0 5px '+sevDot(c)+')');
-  const st=g.querySelector('.n-stat'); st.setAttribute('fill',sevDot(c));
-  st.textContent=c.control?'CONTROL':SEVNAME[c.sev].toUpperCase();
-  if(p){const ping=el('circle',{class:'ping',cx:p.cx,cy:p.cy,r:16,fill:'none',stroke:sevDot(c),'stroke-width':1.5});
-    g.appendChild(ping); setTimeout(()=>ping.remove(),950);}
-}
-function lightEdge([a,b]){
-  const pa=svg.querySelector('path.link[data-a="'+a+'"][data-b="'+b+'"]'); if(!pa) return;
-  pa.setAttribute('stroke',edgeColor(a,b)); pa.setAttribute('opacity','0.9'); pa.classList.add('flow');
-}
-function finishScan(fired,counts,idx){
-  scanRunning=false; scanned=true;
-  scanBtn.className='cta done'; scanTxt.textContent='Re-run scan'; scanBtn.disabled=false;
-  const posture = idx>=66?['CRITICAL','#ff5346']:idx>=33?['ELEVATED','#f2b13c']:['GUARDED','#3fe0cf'];
-  setStatus('live','COMPLETE');
-  document.getElementById('intelState').textContent='COMPLETE';
-  redraw(); // final colored state
-  renderIntel(fired,counts,idx,posture);
-}
-
-/* ---------- INTEL PANEL RENDER ---------- */
-function renderIntel(fired,counts,idx,posture){
-  const col=riskColor(idx);
-  const CIRC=2*Math.PI*60;
-  const totC=counts.c,totH=counts.h,totM=counts.m,total=fired.length;
-  const pctC=total?totC/total*100:0,pctH=total?totH/total*100:0,pctM=total?totM/total*100:0;
-  const desc = idx>=66?'Multiple high-severity vectors reach sensitive components. Immediate mitigation advised.'
-    : idx>=33?'Notable exposure across the data flow. Prioritize the criticals below.'
-    : 'Limited exposure for the staged architecture. Maintain controls and re-scan on change.';
-
-  let html=`
-   <div class="ring-row">
-     <div class="ring">
-       <svg width="140" height="140" viewBox="0 0 140 140">
-         <circle cx="70" cy="70" r="60" fill="none" stroke="rgba(120,160,180,.14)" stroke-width="7"/>
-         <circle cx="70" cy="70" r="60" fill="none" stroke="${col}" stroke-width="8" id="riskArc" stroke-linecap="round"
-           stroke-dasharray="${(idx/99*CIRC).toFixed(1)} ${CIRC.toFixed(1)}" transform="rotate(-90 70 70)"
-           style="filter:drop-shadow(0 0 7px ${col}88)"/>
-       </svg>
-       <div class="rc"><div class="rn" id="riskNum" style="color:${col}">${idx}</div><div class="rl">RISK INDEX</div></div>
-     </div>
-     <div class="posture">
-       <div class="pl">Overall Posture</div>
-       <div class="pv" style="color:${posture[1]};border-color:${posture[1]}44;background:${posture[1]}14">${posture[0]}</div>
-       <div class="pd">${desc}</div>
-     </div>
-   </div>
-
-   <div class="sev-dist">
-     <div class="sd-head"><span>Severity Distribution</span><span>${total} VECTOR${total===1?'':'S'}</span></div>
-     <div class="sd-bar">
-       <span style="width:${pctC}%;background:var(--red)"></span>
-       <span style="width:${pctH}%;background:var(--amber)"></span>
-       <span style="width:${pctM}%;background:var(--violet)"></span>
-     </div>
-     <div class="sd-cells">
-       <div class="sd-cell c"><div class="sc-l"><span class="sq"></span>Critical</div><div class="sc-n">${totC}</div></div>
-       <div class="sd-cell h"><div class="sc-l"><span class="sq"></span>High</div><div class="sc-n">${totH}</div></div>
-       <div class="sd-cell m"><div class="sc-l"><span class="sq"></span>Medium</div><div class="sc-n">${totM}</div></div>
-     </div>
-   </div>
-
-   <div class="vec-h">Identified Attack Vectors</div>`;
-
-  if(!fired.length){
-    html+=`<div style="border:1px solid var(--line);border-radius:9px;padding:16px;background:var(--panel);font-size:12px;color:var(--dim);line-height:1.5">
-      No attack vectors resolved for this architecture. That usually means very little is staged, stage the components your system actually uses (including the model) and re-run.</div>`;
-  }
-
-  fired.forEach((v,i)=>{
-    const tags=(v.tags||[]).map(t=>CMAP[t]?CMAP[t].code:t).slice(0,3);
-    html+=`<div class="vec ${v.sev}${i===0?' open':''}" data-i="${i}">
-      <div class="vec-top" onclick="this.parentNode.classList.toggle('open')">
-        <span class="badge">${SEVNAME[v.sev]}</span>
-        <div class="vec-tt">
-          <div class="vec-id">${v.id}${v.mitigated?' · mitigated':''}</div>
-          <div class="vec-name">${v.name}</div>
-          <div class="vec-tags">${tags.map(t=>`<span class="vtag">${t}</span>`).join('')}</div>
+    <div class="bg-grid"></div>
+    
+    <!-- Hero Section -->
+    <section class="hero">
+        <img src="Phoenix.png" alt="FOINIK Phoenix Logo" class="logo">
+        <h1 class="brand-name">FOINIK</h1>
+        <p class="tagline">AI Security Testing for Space Systems</p>
+        <p class="hero-description">
+            The only sustainable way to secure <strong>continuously evolving AI</strong> is with 
+            <strong>continuously evolving testing</strong>. Foinik uses genetic algorithms to evolve 
+            adversarial attacks against AI systems in satellites, ground stations, and space infrastructure.
+        </p>
+        <div class="cta-buttons">
+            <a href="https://www.linkedin.com/company/foinik/" target="_blank" class="btn btn-primary">
+                Follow Development
+            </a>
+            <a href="#features" class="btn btn-secondary">
+                How It Works
+            </a>
         </div>
-        <div class="vchev">›</div>
-      </div>
-      <div class="vec-body"><div class="vec-inner">
-        <div class="vec-desc">${v.d}${v.mitigated?' <em style="color:var(--teal)">severity reduced: mitigating control staged.</em>':''}</div>
-        <div class="vec-fix"><b>Mitigation</b>${v.f}</div>
-        <div class="ref-grid">
-          ${Object.entries(v.r).map(([k,val])=>`<div class="ref-cell"><div class="rk">${k}</div><div class="rv">${val}</div></div>`).join('')}
+    </section>
+    
+    <!-- Terminal Preview Section -->
+    <section class="terminal-section">
+        <div class="container">
+            <h2 class="section-title">Evolution in Action</h2>
+            <div class="terminal">
+                <div class="terminal-header">
+                    <div class="terminal-dot dot-red"></div>
+                    <div class="terminal-dot dot-yellow"></div>
+                    <div class="terminal-dot dot-green"></div>
+                </div>
+                <div class="terminal-content">
+                    <span class="comment">$ foinik test --target satellite-api.space.corp --mode evolutionary</span><br>
+                    <br>
+                    <span>[*] Initializing Variant Evolution Engine v1.0</span><br>
+                    <span class="success">[+] Target: Autonomous Satellite Control API</span><br>
+                    <span>[*] Seeding initial population: 200 attack variants</span><br>
+                    <span class="success">[+] Generation 1: Best fitness 71% (baseline)</span><br>
+                    <br>
+                    <span>[*] Evolving attack population...</span><br>
+                    <span class="success">[+] Generation 5: Best fitness 83% (+12%)</span><br>
+                    <span class="success">[+] Generation 10: Best fitness 91% (+20%)</span><br>
+                    <br>
+                    <span class="warning">[!] DISCOVERY: Command injection via AI orbit planner</span><br>
+                    <span class="error">[!] CRITICAL: Unauthorized maneuver commands accepted</span><br>
+                    <span class="warning">[!] Safety constraints bypassed through prompt confusion</span><br>
+                    <br>
+                    <span class="success">[+] Evolution complete: 10 generations in 47 seconds</span><br>
+                    <span>[*] Successful attacks discovered: 3 CRITICAL, 5 HIGH, 8 MEDIUM</span><br>
+                    <span class="comment"># This attack pattern was never programmed. Evolution discovered it.</span><br>
+                </div>
+            </div>
         </div>
-      </div></div>
-    </div>`;
-  });
+    </section>
+    
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <div class="container">
+            <h2 class="section-title">Research Focus Areas</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"></div>
+                    <h3 class="feature-title">Autonomous Satellite Testing</h3>
+                    <p class="feature-desc">Test AI decision-making in orbit planners, collision avoidance, and mission control systems for vulnerabilities before deployment.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"></div>
+                    <h3 class="feature-title">Ground Station Security</h3>
+                    <p class="feature-desc">Assess AI-powered ground station operations, telemetry analysis, and command validation systems against adversarial attacks.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"></div>
+                    <h3 class="feature-title">Inter-Satellite Links</h3>
+                    <p class="feature-desc">Test AI communication protocols and autonomous routing decisions in satellite constellations for security weaknesses.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"></div>
+                    <h3 class="feature-title">Genetic Algorithm Engine</h3>
+                    <p class="feature-desc">Attacks evolve like biological organisms—crossbreeding successful techniques and mutating to discover zero-day vulnerabilities.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"></div>
+                    <h3 class="feature-title">Space Protocol Support</h3>
+                    <p class="feature-desc">Native support for CCSDS, TT&C, and satellite-specific APIs. Tests AI systems in their actual operational context.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"></div>
+                    <h3 class="feature-title">Evolution Visualization</h3>
+                    <p class="feature-desc">Watch attack fitness improve across generations. See exactly how each vulnerability was discovered through evolution.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Evolution Cycle Section -->
+    <section class="evolution-section">
+        <div class="container">
+            <h2 class="section-title">The Evolution Cycle</h2>
+            <div class="evolution-steps">
+                <div class="step">
+                    <div class="step-number">SEED</div>
+                    <h3 class="step-title">Plant 200 Seeds</h3>
+                    <p class="step-desc">Initialize with known attack patterns from OWASP, research, and previous tests</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">SELECT</div>
+                    <h3 class="step-title">Natural Selection</h3>
+                    <p class="step-desc">Elite 10% survive unchanged. Top 40% breed. Bottom 50% eliminated</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">BREED</div>
+                    <h3 class="step-title">Crossbreeding</h3>
+                    <p class="step-desc">Successful attacks exchange techniques to create more sophisticated variants</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">MUTATE</div>
+                    <h3 class="step-title">Random Mutations</h3>
+                    <p class="step-desc">30% get DNA changes—synonyms, unicode, authority tokens, context shifts</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">EVOLVE</div>
+                    <h3 class="step-title">Repeat 10x</h3>
+                    <p class="step-desc">Each generation gets 20-30% better. Novel attacks emerge that were never programmed</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
 
-  html+=`<button class="export" style="border-color:rgba(52,217,195,.5);color:var(--teal)" onclick="downloadMd(this)">Download report (.md)</button><button class="export" style="margin-top:8px" onclick="copyMd(this)">Copy report as markdown</button>`;
-  document.getElementById('intel').innerHTML=html;
-  const arc=document.getElementById('riskArc'),rn=document.getElementById('riskNum');
-  if(arc&&rn){
-    const fin=arc.getAttribute('stroke-dasharray');
-    arc.style.strokeDasharray='0 '+CIRC.toFixed(1);
-    arc.style.transition='stroke-dasharray 1.1s cubic-bezier(.2,.7,.2,1)';
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{arc.style.strokeDasharray=fin;}));
-    rn.textContent='0';
-    const rt0=performance.now();
-    (function cnt(n){const pp=Math.min(1,(n-rt0)/950);rn.textContent=Math.round(idx*(1-Math.pow(1-pp,3)));if(pp<1)requestAnimationFrame(cnt);})(rt0);
-  }
-  document.querySelectorAll('#intel .vec').forEach((v,i)=>{v.style.animationDelay=(0.07*i)+'s';});
-  window._md=buildMd(fired,counts,idx,posture);
-}
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="container">
+            <h2 class="section-title">Current Research Status</h2>
+            <div class="stats-grid">
+                <div class="stat">
+                    <div class="stat-number">200</div>
+                    <div class="stat-label">Attack Variants per Test</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">10</div>
+                    <div class="stat-label">Evolution Generations</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">28%</div>
+                    <div class="stat-label">Average Fitness Improvement</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">~1min</div>
+                    <div class="stat-label">Full Evolution Cycle</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2 class="cta-title">Revolutionizing AI Red Teaming</h2>
+            <p class="cta-subtitle">
+                Foinik is a research project exploring how evolutionary algorithms can discover 
+                vulnerabilities that traditional testing methods miss. Follow the development as we 
+                push the boundaries of AI security testing for space systems.
+            </p>
+            <div class="cta-buttons">
+                <a href="https://www.linkedin.com/company/foinik/" target="_blank" class="btn btn-primary">
+                    Follow on LinkedIn
+                </a>
 
-function buildMd(fired,counts,idx,posture){
-  const prof=DIMENSIONS.filter(d=>profile[d.id]).map(d=>`- ${d.label}: **${d.opts.find(o=>o.id===profile[d.id]).txt}**`);
-  const edges=activeEdges();
-  const controls=[...staged].filter(id=>CMAP[id].control).map(id=>CMAP[id].nm);
-  let md=`# FOINIK AI System Security Assessment\n\n`;
-  md+=`> Generated locally in the browser. No data left this machine.\n\n`;
-  md+=`## Final Result\n\n`;
-  md+=`| | |\n|---|---|\n`;
-  md+=`| **Risk index** | ${idx}/99 |\n| **Posture** | ${posture[0]} |\n`;
-  md+=`| **Vectors** | ${fired.length} (${counts.c} critical · ${counts.h} high · ${counts.m} medium) |\n`;
-  md+=`| **Components staged** | ${staged.size} |\n| **Data-flow links** | ${edges.length} |\n`;
-  md+=`| **Active controls** | ${controls.join(', ')||'none'} |\n\n`;
-  md+=`## System Profile\n\n${prof.join('\n')||'- (not set)'}\n\n`;
-  md+=`## Architecture\n\n`;
-  TIERS.forEach(t=>{
-    const cs=COMPONENTS.filter(c=>c.tier===t&&staged.has(c.id));
-    if(cs.length) md+=`**${TIER_LABEL[t]}:** ${cs.map(c=>c.code+' '+c.nm).join(' · ')}\n\n`;
-  });
-  md+=`**Data flow:** ${edges.map(([a,b])=>CMAP[a].code+' → '+CMAP[b].code).join(', ')}\n\n---\n\n`;
-  md+=`## Identified Attack Vectors\n\n`;
-  fired.forEach(v=>{
-    md+=`### [${SEVNAME[v.sev].toUpperCase()}] ${v.id}: ${v.name}${v.mitigated?' *(severity reduced by staged control)*':''}\n\n`;
-    md+=`${v.d}\n\n**Mitigation:** ${v.f}\n\n`;
-    md+=`| Framework | Reference |\n|---|---|\n`;
-    Object.entries(v.r).forEach(([k,val])=>{ md+=`| ${k} | ${val} |\n`; });
-    md+=`\n`;
-  });
-  md+=`---\n_Frameworks referenced: OWASP LLM Top 10 (2025), MITRE ATLAS, NIST AI RMF, Google SAIF, EU AI Act, CWE. Educational aid, not a substitute for a security review._\n`;
-  return md;
-}
-function fallbackCopy(txt){const ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}
-function copyMd(b){
-  const t=b.textContent, md=window._md||'';
-  const done=()=>{b.textContent='Copied \u2713';setTimeout(()=>b.textContent=t,1500);};
-  if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(md).then(done).catch(()=>{fallbackCopy(md);done();});}
-  else{fallbackCopy(md);done();}
-}
-function downloadMd(b){
-  const md=window._md||''; const blob=new Blob([md],{type:'text/markdown;charset=utf-8'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='foinik-security-report.md';
-  document.body.appendChild(a); a.click();
-  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},400);
-  const t=b.textContent; b.textContent='Downloaded \u2713'; setTimeout(()=>b.textContent=t,1500);
-}
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2025 FOINIK. AI Security Research Project.</p>
+                <p>Exploring evolutionary genetic algorithms for AI red teaming</p>
+                <p style="margin-top: 10px; font-size: 12px; color: #555;">
+                    Research & Development 
+                </p>
+            </div>
+            <div class="footer-links">
+                <a href="https://www.linkedin.com/company/foinik/" target="_blank">LinkedIn</a>
+                
+                <a href="#features">Features</a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
 
-/* ---------- RESET ---------- */
-document.getElementById('reset').addEventListener('click',()=>{
-  staged.clear(); for(const k in profile) delete profile[k]; scanned=false;
-  document.querySelectorAll('.comp.on').forEach(e=>e.classList.remove('on'));
-  document.querySelectorAll('.chip.on').forEach(e=>e.classList.remove('on'));
-  scanBtn.className='cta'; scanTxt.textContent='Run adversarial scan';
-  setStatus('','IDLE'); document.getElementById('intelState').textContent='STANDBY';
-  document.getElementById('intel').innerHTML='<div class="intel-idle">> awaiting architecture<br>> stage components and run scan<br>> threat vectors will resolve here</div>';
-  updateCtx(); redraw(); recount();
-});
-
-/* ---------- CLOCK ---------- */
-function tickClock(){
-  const d=new Date();
-  const z=n=>String(n).padStart(2,'0');
-  const tz=(Intl.DateTimeFormat().resolvedOptions().timeZone||'').split('/').pop().replace(/_/g,' ').toUpperCase();
-  document.getElementById('clock').textContent=`${z(d.getHours())}:${z(d.getMinutes())}:${z(d.getSeconds())}${tz?' '+tz:''}`;
-}
-setInterval(tickClock,1000); tickClock();
-
-/* ---------- INIT ---------- */
-recount(); updateCtx(); redraw();
-</script>
-
-
-</body></html>
